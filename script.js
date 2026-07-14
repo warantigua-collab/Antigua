@@ -142,24 +142,44 @@
   ];
 
   /* ---------------------------------------------------------
-     PHOTOS — GitHub-friendly folder convention. No JS editing
-     needed to add photos: just drop image files into
-     images/<place-id>/1.jpg (or 2, 3 — up to 3 per place),
-     using .jpg, .jpeg, .png, or .webp. The gallery below tries
-     each extension and silently falls back to the "photo
-     pending" placeholder if a slot is empty, so partially-
-     filled folders are completely fine.
-  --------------------------------------------------------- */
-  var PHOTO_EXTENSIONS = ["jpg","jpeg","png","webp"];
-  var PHOTOS_PER_PLACE = 3;
+     PHOTOS — reads whatever image files actually exist in each
+     images/<place-id>/ folder straight from the GitHub repo, via
+     the GitHub API. No renaming required: drop in photos with any
+     filename (Cerro San Cristobal_1.png, IMG_4821.jpg, whatever
+     your phone/camera calls it) and they'll show up automatically.
 
-  function tryLoadPhoto(placeId, slotIndex, extIdx, callback){
-    if(extIdx >= PHOTO_EXTENSIONS.length){ callback(null); return; }
-    var path = "images/" + placeId + "/" + slotIndex + "." + PHOTO_EXTENSIONS[extIdx];
-    var img = new Image();
-    img.onload = function(){ callback(path); };
-    img.onerror = function(){ tryLoadPhoto(placeId, slotIndex, extIdx + 1, callback); };
-    img.src = path;
+     Update GITHUB_OWNER / GITHUB_REPO / GITHUB_BRANCH below to
+     match your repo if you fork or rename it.
+
+     Note: HEIC/HEIF photos (the default format on newer iPhones)
+     are skipped, because most browsers can't display HEIC directly
+     — convert those to .jpg before adding them (Preview on Mac,
+     or "Photos" > Export on iPhone/Mac, or any online converter).
+  --------------------------------------------------------- */
+  var GITHUB_OWNER = "warantigua-collab";
+  var GITHUB_REPO = "Antigua";
+  var GITHUB_BRANCH = "main";
+  var VALID_PHOTO_EXT = /\.(jpe?g|png|webp|gif)$/i;
+  var MAX_PHOTOS_PER_PLACE = 6;
+  var photoCache = {}; // placeId -> array of download URLs (avoids re-fetching per open)
+
+  function fetchPlacePhotos(placeId, callback){
+    if(photoCache[placeId]){ callback(photoCache[placeId]); return; }
+    var url = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO
+      + "/contents/images/" + encodeURIComponent(placeId) + "?ref=" + GITHUB_BRANCH;
+
+    fetch(url, { headers: { "Accept": "application/vnd.github+json" } })
+      .then(function(res){ return res.ok ? res.json() : []; })
+      .then(function(data){
+        var urls = (Array.isArray(data) ? data : [])
+          .filter(function(f){ return f.type === "file" && VALID_PHOTO_EXT.test(f.name); })
+          .sort(function(a,b){ return a.name.localeCompare(b.name, undefined, { numeric:true }); })
+          .slice(0, MAX_PHOTOS_PER_PLACE)
+          .map(function(f){ return f.download_url; });
+        photoCache[placeId] = urls;
+        callback(urls);
+      })
+      .catch(function(){ callback([]); });
   }
 
   var STORAGE_KEY = "sancristobal_passport_v3";
@@ -449,11 +469,9 @@
     document.getElementById("modalCoords").textContent = t("coordsNote");
 
     var primaryColor = CATS[place.cats[0]].color;
-    var galleryFrames = [0,1,2].map(function(i){
-      return '<div class="frame" id="galFrame'+i+'" style="background:linear-gradient(135deg,'+primaryColor+',#2b2015)">'
-        + t("photoPending")(i+1)
-        + '</div>';
-    }).join("");
+    var loadingFrame = '<div class="frame" id="galFrame" style="background:linear-gradient(135deg,'+primaryColor+',#2b2015)">'
+      + t("photoPending")(1)
+      + '</div>';
 
     var reviewsHTML = place.reviews.length
       ? place.reviews.map(function(r){
@@ -465,7 +483,7 @@
     var isStamped = !!stamped[place.id];
 
     document.getElementById("modalBody").innerHTML = ''
-      + '<div class="gallery">'+galleryFrames+'</div>'
+      + '<div class="gallery" id="galleryWrap">'+loadingFrame+'</div>'
       + '<div class="video-note">'+t("videoNote")+'</div>'
       + '<h3 class="modal-section-title">'+t("descriptionTitle")+'</h3>'
       + '<p class="desc">'+escapeHTML(place.desc[LANG])+'</p>'
@@ -480,26 +498,22 @@
 
     document.getElementById("stampBtn").addEventListener("click", function(){ toggleStamp(place.id); });
 
-    /* look for real photos in images/<place-id>/1.*, 2.*, 3.* — swap
-       any placeholder slot for the real photo the moment it's found */
-    for(var slot = 1; slot <= PHOTOS_PER_PLACE; slot++){
-      (function(slotIndex){
-        tryLoadPhoto(place.id, slotIndex, 0, function(path){
-          if(!path) return;
-          if(activePlaceId !== place.id) return; // modal moved on before the image resolved
-          var frame = document.getElementById("galFrame"+(slotIndex-1));
-          if(!frame) return;
-          var link = document.createElement("a");
-          link.href = path;
-          link.target = "_blank";
-          link.rel = "noopener";
-          link.className = "frame photo-frame";
-          link.style.backgroundImage = "url('"+path+"')";
-          link.setAttribute("aria-label", "Open photo full size");
-          frame.replaceWith(link);
-        });
-      })(slot);
-    }
+    /* ask GitHub what's actually in images/<place-id>/ and render
+       whatever real photos it finds — any filename works */
+    fetchPlacePhotos(place.id, function(urls){
+      if(activePlaceId !== place.id) return; // modal moved on before this resolved
+      var wrap = document.getElementById("galleryWrap");
+      if(!wrap) return;
+      if(urls.length === 0){
+        wrap.innerHTML = '<div class="frame" style="background:linear-gradient(135deg,'+primaryColor+',#2b2015)">'
+          + t("photoPending")(1) + '</div>';
+        return;
+      }
+      wrap.innerHTML = urls.map(function(u){
+        return '<a class="frame photo-frame" href="'+u+'" target="_blank" rel="noopener" '
+          + 'style="background-image:url(\''+u+'\')" aria-label="Open photo full size"></a>';
+      }).join("");
+    });
 
     lastFocused = document.activeElement;
     backdrop.classList.add("open");

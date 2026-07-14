@@ -26,7 +26,7 @@ script.js             all logic — data, rendering, search/filter, passport
 images/
   README.md          how to add photos (drop-in folders, no code editing)
   <place-id>/         one folder per map location
-    1.jpg             up to 3 numbered photos per place, auto-detected
+    (any image files)  auto-detected via the GitHub API, no renaming needed
 ```
 
 ## Adding or editing places
@@ -64,4 +64,6 @@ passport" button in the Passport tab for starting over.
 - The map is a hand-traced illustration based on reference screenshots, not
   a GPS-accurate survey — some positions (noted in the map caption) are
   estimated.
-- Photo galleries cap at 3 images per place.
+- Photo galleries show up to 6 images per place, fetched live from GitHub —
+  photos won't appear when opening index.html locally without hosting, and
+  .HEIC/.HEIF photos need converting to .jpg first (see images/README.md).

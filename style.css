@@ -248,7 +248,7 @@
 
   @media (max-width: 640px){
     .controls{ flex-direction:column; align-items:stretch; }
-    .search-wrap{ max-width:none; }
+    .search-wrap{ max-width:none; flex: 0 0 auto; }
     .gallery{ grid-template-columns: repeat(2,1fr); }
     .sidebar{ max-height:none; }
   }

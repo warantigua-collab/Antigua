@@ -666,9 +666,6 @@
   --------------------------------------------------------- */
   var MIN_SCALE = 1, MAX_SCALE = 5;
   var mapScale = 1, mapX = 0, mapY = 0;
-  var activePointers = {}; // pointerId -> {x,y}
-  var dragPointerId = null, dragStartX = 0, dragStartY = 0, dragStartMapX = 0, dragStartMapY = 0, dragMoved = false;
-  var pinchStartDist = 0, pinchStartScale = 1, pinchStartCenter = { x:0, y:0 };
   var lastTapTime = 0, lastTapX = 0, lastTapY = 0;
 
   function applyMapTransform(){
@@ -700,9 +697,6 @@
     applyMapTransform();
   }
 
-  function pointerDistance(p1, p2){ return Math.hypot(p1.x - p2.x, p1.y - p2.y); }
-  function pointerCenter(p1, p2){ return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }; }
-
   /* plain scroll keeps scrolling the page; only Ctrl/Cmd+wheel (or a
      trackpad pinch, which browsers report as a ctrl-wheel event) zooms
      the map — same convention Google Maps embeds use to avoid trapping
@@ -725,86 +719,111 @@
   });
   document.getElementById("zoomResetBtn").addEventListener("click", resetMapView);
 
-  mapContainer.addEventListener("pointerdown", function(e){
-    if(e.target.closest(".pin")) return; // let pin buttons handle their own click
-    e.preventDefault();
-    activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-    var ids = Object.keys(activePointers);
+  /* ---- mouse drag (desktop) — tracked on document so dragging past the
+     map's edge doesn't drop the gesture ---- */
+  var mouseDragging = false, mouseStartX = 0, mouseStartY = 0, mouseStartMapX = 0, mouseStartMapY = 0;
 
-    if(ids.length === 1){
-      dragPointerId = e.pointerId;
-      dragMoved = false;
-      dragStartX = e.clientX; dragStartY = e.clientY;
-      dragStartMapX = mapX; dragStartMapY = mapY;
-      mapContainer.setPointerCapture(e.pointerId);
-      mapContainer.classList.add("dragging");
-    } else if(ids.length === 2){
-      dragPointerId = null;
-      var pts = ids.map(function(id){ return activePointers[id]; });
-      pinchStartDist = pointerDistance(pts[0], pts[1]);
-      pinchStartScale = mapScale;
-      var rect = mapContainer.getBoundingClientRect();
-      var center = pointerCenter(pts[0], pts[1]);
-      pinchStartCenter = { x: center.x - rect.left, y: center.y - rect.top };
-    }
+  mapContainer.addEventListener("mousedown", function(e){
+    if(e.target.closest(".pin, .map-zoom-controls")) return;
+    mouseDragging = true;
+    mouseStartX = e.clientX; mouseStartY = e.clientY;
+    mouseStartMapX = mapX; mouseStartMapY = mapY;
+    mapContainer.classList.add("dragging");
+    e.preventDefault();
+  });
+  document.addEventListener("mousemove", function(e){
+    if(!mouseDragging) return;
+    mapX = mouseStartMapX + (e.clientX - mouseStartX);
+    mapY = mouseStartMapY + (e.clientY - mouseStartY);
+    clampMapPosition();
+    applyMapTransform();
+  });
+  document.addEventListener("mouseup", function(){
+    if(!mouseDragging) return;
+    mouseDragging = false;
+    mapContainer.classList.remove("dragging");
+  });
+  mapContainer.addEventListener("dblclick", function(e){
+    var rect = mapContainer.getBoundingClientRect();
+    zoomAt(e.clientX - rect.left, e.clientY - rect.top, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
   });
 
-  mapContainer.addEventListener("pointermove", function(e){
-    if(!activePointers[e.pointerId]) return;
-    activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
-    var ids = Object.keys(activePointers);
+  /* ---- touch: single-finger pan, two-finger pinch, double-tap ----
+     Built on native Touch Events rather than Pointer Events — iOS Safari's
+     multi-touch Pointer Event support has long-standing reliability gaps
+     for exactly this kind of two-finger gesture, while Touch Events (with
+     their e.touches list of everything currently down) are the oldest,
+     most battle-tested touch API on iOS. */
+  var touchMode = null; // "pan" | "pinch" | null
+  var touchMoved = false;
+  var touchStartX = 0, touchStartY = 0, touchStartMapX = 0, touchStartMapY = 0;
+  var pinchStartDist = 0, pinchStartScale = 1, pinchStartCenter = { x: 0, y: 0 };
 
-    if(ids.length === 2){
-      var pts = ids.map(function(id){ return activePointers[id]; });
-      if(pinchStartDist > 0){
-        zoomAt(pinchStartCenter.x, pinchStartCenter.y, pinchStartScale * (pointerDistance(pts[0], pts[1]) / pinchStartDist));
-      }
-      return;
+  function touchDistance(a, b){ return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
+  function touchCenter(a, b, rect){
+    return { x: (a.clientX + b.clientX) / 2 - rect.left, y: (a.clientY + b.clientY) / 2 - rect.top };
+  }
+
+  mapContainer.addEventListener("touchstart", function(e){
+    if(e.target.closest(".pin, .map-zoom-controls")) return;
+    e.preventDefault();
+    var rect = mapContainer.getBoundingClientRect();
+    if(e.touches.length === 1){
+      touchMode = "pan";
+      touchMoved = false;
+      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+      touchStartMapX = mapX; touchStartMapY = mapY;
+    } else if(e.touches.length === 2){
+      touchMode = "pinch";
+      pinchStartDist = touchDistance(e.touches[0], e.touches[1]);
+      pinchStartScale = mapScale;
+      pinchStartCenter = touchCenter(e.touches[0], e.touches[1], rect);
     }
+  }, { passive: false });
 
-    if(dragPointerId === e.pointerId){
-      var dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
-      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
-      mapX = dragStartMapX + dx;
-      mapY = dragStartMapY + dy;
+  mapContainer.addEventListener("touchmove", function(e){
+    if(!touchMode) return;
+    e.preventDefault();
+    if(touchMode === "pan" && e.touches.length === 1){
+      var dx = e.touches[0].clientX - touchStartX, dy = e.touches[0].clientY - touchStartY;
+      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) touchMoved = true;
+      mapX = touchStartMapX + dx;
+      mapY = touchStartMapY + dy;
       clampMapPosition();
       applyMapTransform();
+    } else if(touchMode === "pinch" && e.touches.length === 2 && pinchStartDist > 0){
+      var dist = touchDistance(e.touches[0], e.touches[1]);
+      zoomAt(pinchStartCenter.x, pinchStartCenter.y, pinchStartScale * (dist / pinchStartDist));
     }
-  });
+  }, { passive: false });
 
-  function endMapPointer(e){
-    if(!activePointers[e.pointerId]) return;
-    delete activePointers[e.pointerId];
-    var ids = Object.keys(activePointers);
-
-    if(e.pointerId === dragPointerId){
-      dragPointerId = null;
-      mapContainer.classList.remove("dragging");
-
-      if(!dragMoved){
-        var now = Date.now();
-        var rect = mapContainer.getBoundingClientRect();
-        var x = e.clientX - rect.left, y = e.clientY - rect.top;
-        if(now - lastTapTime < 350 && Math.hypot(x - lastTapX, y - lastTapY) < 30){
-          zoomAt(x, y, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
-          lastTapTime = 0;
-        } else {
-          lastTapTime = now; lastTapX = x; lastTapY = y;
-        }
+  function onTouchEnd(e){
+    if(touchMode === "pan" && !touchMoved){
+      var rect = mapContainer.getBoundingClientRect();
+      var t = e.changedTouches[0];
+      var x = t.clientX - rect.left, y = t.clientY - rect.top;
+      var now = Date.now();
+      if(now - lastTapTime < 350 && Math.hypot(x - lastTapX, y - lastTapY) < 30){
+        zoomAt(x, y, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now; lastTapX = x; lastTapY = y;
       }
     }
-    if(ids.length === 1){
-      // one finger remains after a pinch ends — resume it as a plain drag
-      var id = ids[0];
-      dragPointerId = parseInt(id, 10);
-      dragStartX = activePointers[id].x; dragStartY = activePointers[id].y;
-      dragStartMapX = mapX; dragStartMapY = mapY;
-      dragMoved = true; // avoids mis-firing a double-tap zoom right after a pinch
+
+    if(e.touches.length === 1){
+      // one finger remains after a pinch ends — resume it as a plain pan
+      touchMode = "pan";
+      touchMoved = true; // avoids mis-firing a tap-zoom right after a pinch
+      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+      touchStartMapX = mapX; touchStartMapY = mapY;
+    } else if(e.touches.length === 0){
+      touchMode = null;
     }
     pinchStartDist = 0;
   }
-  mapContainer.addEventListener("pointerup", endMapPointer);
-  mapContainer.addEventListener("pointercancel", endMapPointer);
+  mapContainer.addEventListener("touchend", onTouchEnd);
+  mapContainer.addEventListener("touchcancel", function(){ touchMode = null; pinchStartDist = 0; });
 
   window.addEventListener("resize", function(){ clampMapPosition(); applyMapTransform(); });
 

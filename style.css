@@ -87,16 +87,27 @@
 
   .map-container{
     position:relative; width:100%; aspect-ratio: 1000 / 620; border-radius: 3px; overflow:hidden;
-    touch-action: manipulation; background: var(--parchment);
+    touch-action: none; background: var(--parchment); cursor: grab; user-select: none;
   }
-  .map-container svg.terrain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .map-container.dragging{ cursor: grabbing; }
+  .map-inner{ position:absolute; inset:0; width:100%; height:100%; transform-origin: 0 0; }
+  .map-inner svg.terrain{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+
+  .map-zoom-controls{ position:absolute; right: 16px; top: 16px; display:flex; flex-direction:column; gap:6px; z-index: 6; }
+  .map-zoom-controls button{
+    width: 36px; height:36px; border-radius:50%; border: 2px solid var(--ink-soft); background: var(--parchment);
+    color: var(--ink); font-family:'Space Mono', monospace; font-size: 1.1rem; line-height:1;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center;
+  }
+  .map-zoom-controls button:hover{ background: var(--ink-soft); color: var(--parchment); }
+  #zoomResetBtn{ font-size: 0.95rem; }
 
   .pin{
-    position:absolute; transform: translate(-50%, -100%); background:none; border:none; padding:0;
+    position:absolute; transform: translate(-50%, -100%) scale(var(--pin-scale, 1)); background:none; border:none; padding:0;
     width: 28px; height: 36px; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.35));
     transition: transform 0.15s ease; z-index: 3;
   }
-  .pin:hover, .pin:focus-visible{ transform: translate(-50%,-104%) scale(1.28); z-index: 10; }
+  .pin:hover, .pin:focus-visible{ transform: translate(-50%,-104%) scale(calc(var(--pin-scale, 1) * 1.28)); z-index: 10; }
   .pin.faded{ opacity: 0.15; filter:none; pointer-events:none; }
   .pin svg{ width:100%; height:100%; overflow: visible; }
   .pin .stamped-badge{
@@ -254,4 +265,6 @@
     .search-wrap{ max-width:none; flex: 0 0 auto; }
     .gallery{ grid-template-columns: repeat(2,1fr); }
     .sidebar{ max-height:none; }
+    .map-zoom-controls{ right: 10px; top: 10px; gap: 5px; }
+    .map-zoom-controls button{ width: 32px; height:32px; font-size: 1rem; }
   }

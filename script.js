@@ -22,6 +22,9 @@
       resetConfirm: "Reset your passport? All stamps saved on this device will be deleted.",
       footer: "All names and positions come from the screenshots you sent. Send me photos, videos, reviews, or position corrections for any place and I'll update the map.",
       modalClose: "Close",
+      zoomInAria: "Zoom in",
+      zoomOutAria: "Zoom out",
+      zoomResetAria: "Reset map view",
       coordsNote: "Position traced from reference map",
       photoPending: function(n){ return "Photo " + n + " — pending<br>(upload your image here)"; },
       videoNote: "🎬 Space reserved for a short video — add a link or clip when available.",
@@ -54,6 +57,9 @@
       resetConfirm: "¿Reiniciar tu pasaporte? Se borrarán todos los sellos guardados en este dispositivo.",
       footer: "Todos los nombres y posiciones vienen de las capturas que enviaste. Envíame fotos, videos, reseñas o correcciones de posición para cada lugar y actualizo el mapa.",
       modalClose: "Cerrar",
+      zoomInAria: "Acercar",
+      zoomOutAria: "Alejar",
+      zoomResetAria: "Restablecer vista del mapa",
       coordsNote: "Posición trazada del mapa de referencia",
       photoPending: function(n){ return "Foto " + n + " — pendiente<br>(sube tu imagen aquí)"; },
       videoNote: "🎬 Espacio reservado para video corto — añade un enlace o clip cuando esté disponible.",
@@ -368,6 +374,9 @@
      PINS
   --------------------------------------------------------- */
   var mapContainer = document.getElementById("mapContainer");
+  var mapInner = document.createElement("div");
+  mapInner.className = "map-inner";
+  mapContainer.appendChild(mapInner);
 
   function pinSVG(color){
     return '<svg viewBox="0 0 34 44" xmlns="http://www.w3.org/2000/svg">'
@@ -377,7 +386,7 @@
   }
 
   function renderPins(){
-    mapContainer.querySelectorAll(".pin").forEach(function(p){ p.remove(); });
+    mapInner.querySelectorAll(".pin").forEach(function(p){ p.remove(); });
     var term = searchTerm.trim().toLowerCase();
 
     PLACES.forEach(function(place){
@@ -405,7 +414,7 @@
       btn.addEventListener("click", function(){ openModal(place.id); });
       btn.addEventListener("mouseenter", function(){ prefetchPlacePhotos(place.id); });
       btn.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
-      mapContainer.appendChild(btn);
+      mapInner.appendChild(btn);
     });
   }
 
@@ -647,6 +656,158 @@
     if(e.key === "ArrowRight") lightboxNav(1);
   });
 
+  /* ---------------------------------------------------------
+     MAP PAN / ZOOM — drag, wheel (Ctrl/Cmd or trackpad pinch),
+     touch pinch, double-click/double-tap, and the +/-/reset
+     buttons all funnel through zoomAt()/clampMapPosition() so
+     panning always stays within the map's own edges. Pins carry
+     a counter-scale (--pin-scale) so they stay a constant size
+     on screen instead of ballooning as the map zooms in.
+  --------------------------------------------------------- */
+  var MIN_SCALE = 1, MAX_SCALE = 5;
+  var mapScale = 1, mapX = 0, mapY = 0;
+  var activePointers = {}; // pointerId -> {x,y}
+  var dragPointerId = null, dragStartX = 0, dragStartY = 0, dragStartMapX = 0, dragStartMapY = 0, dragMoved = false;
+  var pinchStartDist = 0, pinchStartScale = 1, pinchStartCenter = { x:0, y:0 };
+  var lastTapTime = 0, lastTapX = 0, lastTapY = 0;
+
+  function applyMapTransform(){
+    mapInner.style.transform = "translate(" + mapX + "px," + mapY + "px) scale(" + mapScale + ")";
+    mapContainer.style.setProperty("--pin-scale", 1 / mapScale);
+  }
+
+  function clampMapPosition(){
+    var rect = mapContainer.getBoundingClientRect();
+    var scaledW = rect.width * mapScale, scaledH = rect.height * mapScale;
+    var minX = Math.min(0, rect.width - scaledW), minY = Math.min(0, rect.height - scaledH);
+    mapX = Math.max(minX, Math.min(0, mapX));
+    mapY = Math.max(minY, Math.min(0, mapY));
+  }
+
+  function zoomAt(anchorX, anchorY, nextScale){
+    nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, nextScale));
+    var mapPointX = (anchorX - mapX) / mapScale;
+    var mapPointY = (anchorY - mapY) / mapScale;
+    mapScale = nextScale;
+    mapX = anchorX - mapPointX * mapScale;
+    mapY = anchorY - mapPointY * mapScale;
+    clampMapPosition();
+    applyMapTransform();
+  }
+
+  function resetMapView(){
+    mapScale = 1; mapX = 0; mapY = 0;
+    applyMapTransform();
+  }
+
+  function pointerDistance(p1, p2){ return Math.hypot(p1.x - p2.x, p1.y - p2.y); }
+  function pointerCenter(p1, p2){ return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }; }
+
+  /* plain scroll keeps scrolling the page; only Ctrl/Cmd+wheel (or a
+     trackpad pinch, which browsers report as a ctrl-wheel event) zooms
+     the map — same convention Google Maps embeds use to avoid trapping
+     the page scroll when the cursor happens to be over the map. */
+  mapContainer.addEventListener("wheel", function(e){
+    if(!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    var rect = mapContainer.getBoundingClientRect();
+    var factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
+    zoomAt(e.clientX - rect.left, e.clientY - rect.top, mapScale * factor);
+  }, { passive: false });
+
+  document.getElementById("zoomInBtn").addEventListener("click", function(){
+    var rect = mapContainer.getBoundingClientRect();
+    zoomAt(rect.width / 2, rect.height / 2, mapScale * 1.4);
+  });
+  document.getElementById("zoomOutBtn").addEventListener("click", function(){
+    var rect = mapContainer.getBoundingClientRect();
+    zoomAt(rect.width / 2, rect.height / 2, mapScale / 1.4);
+  });
+  document.getElementById("zoomResetBtn").addEventListener("click", resetMapView);
+
+  mapContainer.addEventListener("pointerdown", function(e){
+    if(e.target.closest(".pin")) return; // let pin buttons handle their own click
+    e.preventDefault();
+    activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(activePointers);
+
+    if(ids.length === 1){
+      dragPointerId = e.pointerId;
+      dragMoved = false;
+      dragStartX = e.clientX; dragStartY = e.clientY;
+      dragStartMapX = mapX; dragStartMapY = mapY;
+      mapContainer.setPointerCapture(e.pointerId);
+      mapContainer.classList.add("dragging");
+    } else if(ids.length === 2){
+      dragPointerId = null;
+      var pts = ids.map(function(id){ return activePointers[id]; });
+      pinchStartDist = pointerDistance(pts[0], pts[1]);
+      pinchStartScale = mapScale;
+      var rect = mapContainer.getBoundingClientRect();
+      var center = pointerCenter(pts[0], pts[1]);
+      pinchStartCenter = { x: center.x - rect.left, y: center.y - rect.top };
+    }
+  });
+
+  mapContainer.addEventListener("pointermove", function(e){
+    if(!activePointers[e.pointerId]) return;
+    activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var ids = Object.keys(activePointers);
+
+    if(ids.length === 2){
+      var pts = ids.map(function(id){ return activePointers[id]; });
+      if(pinchStartDist > 0){
+        zoomAt(pinchStartCenter.x, pinchStartCenter.y, pinchStartScale * (pointerDistance(pts[0], pts[1]) / pinchStartDist));
+      }
+      return;
+    }
+
+    if(dragPointerId === e.pointerId){
+      var dx = e.clientX - dragStartX, dy = e.clientY - dragStartY;
+      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved = true;
+      mapX = dragStartMapX + dx;
+      mapY = dragStartMapY + dy;
+      clampMapPosition();
+      applyMapTransform();
+    }
+  });
+
+  function endMapPointer(e){
+    if(!activePointers[e.pointerId]) return;
+    delete activePointers[e.pointerId];
+    var ids = Object.keys(activePointers);
+
+    if(e.pointerId === dragPointerId){
+      dragPointerId = null;
+      mapContainer.classList.remove("dragging");
+
+      if(!dragMoved){
+        var now = Date.now();
+        var rect = mapContainer.getBoundingClientRect();
+        var x = e.clientX - rect.left, y = e.clientY - rect.top;
+        if(now - lastTapTime < 350 && Math.hypot(x - lastTapX, y - lastTapY) < 30){
+          zoomAt(x, y, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
+          lastTapTime = 0;
+        } else {
+          lastTapTime = now; lastTapX = x; lastTapY = y;
+        }
+      }
+    }
+    if(ids.length === 1){
+      // one finger remains after a pinch ends — resume it as a plain drag
+      var id = ids[0];
+      dragPointerId = parseInt(id, 10);
+      dragStartX = activePointers[id].x; dragStartY = activePointers[id].y;
+      dragStartMapX = mapX; dragStartMapY = mapY;
+      dragMoved = true; // avoids mis-firing a double-tap zoom right after a pinch
+    }
+    pinchStartDist = 0;
+  }
+  mapContainer.addEventListener("pointerup", endMapPointer);
+  mapContainer.addEventListener("pointercancel", endMapPointer);
+
+  window.addEventListener("resize", function(){ clampMapPosition(); applyMapTransform(); });
+
   document.getElementById("searchInput").addEventListener("input", function(e){
     searchTerm = e.target.value || "";
     renderPins();
@@ -697,6 +858,9 @@
     document.getElementById("resetPassport").textContent = t("resetPassport");
     document.getElementById("txt-footer").textContent = t("footer");
     document.getElementById("modalClose").setAttribute("aria-label", t("modalClose"));
+    document.getElementById("zoomInBtn").setAttribute("aria-label", t("zoomInAria"));
+    document.getElementById("zoomOutBtn").setAttribute("aria-label", t("zoomOutAria"));
+    document.getElementById("zoomResetBtn").setAttribute("aria-label", t("zoomResetAria"));
   }
 
   function setLang(lang){
@@ -719,7 +883,7 @@
   });
 
   function init(){
-    mapContainer.insertAdjacentHTML("afterbegin", buildTerrainSVG());
+    mapInner.insertAdjacentHTML("afterbegin", buildTerrainSVG());
     applyStaticStrings();
     renderLegend();
     renderFilterChips();

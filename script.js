@@ -162,19 +162,31 @@
      or "Photos" > Export on iPhone/Mac, or any online converter).
 
      For best load speed, keep source photos under ~1600px on the
-     longest side / ~500KB — jsDelivr speeds up delivery but doesn't
-     shrink the files themselves.
+     longest side / ~500KB — resizing below helps a lot regardless,
+     but starting from a smaller original always loads faster still.
   --------------------------------------------------------- */
   var GITHUB_OWNER = "warantigua-collab";
   var GITHUB_REPO = "Antigua";
   var GITHUB_BRANCH = "main";
   var VALID_PHOTO_EXT = /\.(jpe?g|png|webp|gif)$/i;
   var MAX_PHOTOS_PER_PLACE = 6;
-  var photoCache = {}; // placeId -> array of CDN URLs (avoids re-fetching per open)
+  var photoCache = {}; // placeId -> array of { thumb, full } CDN URLs (avoids re-fetching per open)
+
+  var THUMB_WIDTH = 340;   // small, fast-loading version used in the gallery grid
+  var LIGHTBOX_WIDTH = 1600; // larger version used when a photo is opened full-size
+  var IMG_QUALITY = 75;
 
   function jsdelivrUrl(path){
     return "https://cdn.jsdelivr.net/gh/" + GITHUB_OWNER + "/" + GITHUB_REPO
       + "@" + GITHUB_BRANCH + "/" + path.split("/").map(encodeURIComponent).join("/");
+  }
+
+  /* Routes the real photo through wsrv.nl (a free, Cloudflare-backed
+     image cache & resize proxy) so the browser downloads a genuinely
+     small file for thumbnails instead of the full original every time. */
+  function resizedUrl(sourceUrl, width){
+    return "https://wsrv.nl/?url=" + encodeURIComponent(sourceUrl)
+      + "&w=" + width + "&q=" + IMG_QUALITY + "&output=webp";
   }
 
   function fetchPlacePhotos(placeId, callback){
@@ -189,7 +201,10 @@
           .filter(function(f){ return f.type === "file" && VALID_PHOTO_EXT.test(f.name); })
           .sort(function(a,b){ return a.name.localeCompare(b.name, undefined, { numeric:true }); })
           .slice(0, MAX_PHOTOS_PER_PLACE)
-          .map(function(f){ return jsdelivrUrl(f.path); });
+          .map(function(f){
+            var src = jsdelivrUrl(f.path);
+            return { thumb: resizedUrl(src, THUMB_WIDTH), full: resizedUrl(src, LIGHTBOX_WIDTH) };
+          });
         photoCache[placeId] = urls;
         callback(urls);
       })
@@ -525,7 +540,7 @@
       }
       wrap.innerHTML = urls.map(function(u, i){
         return '<button type="button" class="frame photo-frame" data-idx="'+i+'" '
-          + 'style="background-image:url(\''+u+'\')" aria-label="View photo '+(i+1)+' larger"></button>';
+          + 'style="background-image:url(\''+u.thumb+'\')" aria-label="View photo '+(i+1)+' larger"></button>';
       }).join("");
       wrap.querySelectorAll(".photo-frame").forEach(function(btn){
         btn.addEventListener("click", function(){
@@ -574,7 +589,7 @@
   var lightboxLastFocused = null;
 
   function showLightboxImage(){
-    lightboxImg.src = lightboxUrls[lightboxIndex];
+    lightboxImg.src = lightboxUrls[lightboxIndex].full;
     lightboxCounter.textContent = (lightboxIndex + 1) + " / " + lightboxUrls.length;
   }
 

@@ -264,17 +264,12 @@
     return ''
     + '<svg class="terrain" viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'
     + '<defs>'
-    +   '<filter id="paper" x="-20%" y="-20%" width="140%" height="140%">'
-    +     '<feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="7" result="noise"/>'
-    +     '<feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.21  0 0 0 0 0.16  0 0 0 0 0.11  0 0 0 0.06 0"/>'
-    +   '</filter>'
     +   '<radialGradient id="vignette" cx="50%" cy="45%" r="78%">'
     +     '<stop offset="60%" stop-color="#e8d9b5" stop-opacity="0"/>'
     +     '<stop offset="100%" stop-color="#5b4636" stop-opacity="0.38"/>'
     +   '</radialGradient>'
     + '</defs>'
     + '<rect x="0" y="0" width="1000" height="620" fill="#e8d9b5"/>'
-    + '<rect x="0" y="0" width="1000" height="620" filter="url(#paper)"/>'
     + contourGroup()
     + forestPatches()
     /* El Bajo street grid — the actual small block pattern at the

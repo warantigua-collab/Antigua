@@ -109,40 +109,40 @@
      entry in `cats` sets the pin's color. Send corrections any time.
   --------------------------------------------------------- */
   var PLACES = [
-    { id:"cerro-san-cristobal", name:"Cerro San Cristóbal", cats:["restaurant"], x:26, y:39,
+    { id:"cerro-san-cristobal", name:"Cerro San Cristóbal", cats:["restaurant"], x:27, y:49,
       desc:{ en:"Restaurant on the tight hairpin bend of the main road, right next to Restaurante Antigua Mágica.",
              es:"Restaurante en la curva cerrada (herradura) del camino principal, junto a Restaurante Antigua Mágica." }, reviews:[] },
-    { id:"restaurante-antigua-magica", name:"Restaurante Antigua Mágica", cats:["restaurant"], x:29, y:41,
+    { id:"restaurante-antigua-magica", name:"Restaurante Antigua Mágica", cats:["restaurant"], x:24, y:52,
       desc:{ en:"Restaurant right beside Cerro San Cristóbal, on the same bend of the road.",
              es:"Restaurante justo al lado de Cerro San Cristóbal, en la misma curva del camino." }, reviews:[] },
-    { id:"vertigo-antigua", name:"Vértigo Antigua — Mirador Extremo", cats:["viewpoint"], x:38, y:50,
+    { id:"vertigo-antigua", name:"Vértigo Antigua — Mirador Extremo", cats:["viewpoint"], x:38, y:61,
       desc:{ en:"Extreme viewpoint on the road, next to La Pilita.",
              es:"Mirador extremo sobre el camino, junto a La Pilita." }, reviews:[] },
-    { id:"la-pilita", name:"La Pilita", cats:["wellness"], x:42, y:52,
+    { id:"la-pilita", name:"La Pilita", cats:["wellness"], x:41, y:62,
       desc:{ en:"Wellness spot just past Vértigo Antigua, on the same bend of the road.",
              es:"Punto de bienestar justo después de Vértigo Antigua, sobre la misma curva del camino." }, reviews:[] },
-    { id:"plaza-san-cristobal-alto", name:"San Cristóbal El Alto (main plaza)", cats:["landmark"], x:43, y:69,
+    { id:"plaza-san-cristobal-alto", name:"San Cristóbal El Alto (main plaza)", cats:["landmark"], x:47, y:66,
       desc:{ en:"The heart of the village — the main plaza where the church stands (marked with the pine-tree icon). Position estimated from road continuity; confirm if it needs adjusting.",
              es:"El centro del pueblo — la plaza principal donde está la iglesia (marcada con el ícono de pino). Posición estimada por continuidad del camino; confírmala si necesita ajuste." }, reviews:[] },
-    { id:"casa-san-sebastian", name:"Casa San Sebastián", cats:["lodging"], x:40, y:70,
+    { id:"casa-san-sebastian", name:"Casa San Sebastián", cats:["lodging"], x:45, y:67,
       desc:{ en:"Lodging right next to the village's main plaza.",
              es:"Alojamiento justo junto a la plaza principal del pueblo." }, reviews:[] },
-    { id:"tienda-abuelitos", name:"Tienda Abuelitos Coca y Miguel", cats:["service","restaurant"], x:44, y:63,
+    { id:"tienda-abuelitos", name:"Tienda Abuelitos Coca y Miguel", cats:["service","restaurant"], x:48, y:64,
       desc:{ en:"Souvenir shop and restaurant, near the main plaza.",
              es:"Tienda de recuerdos y también restaurante, cerca de la plaza principal." }, reviews:[] },
-    { id:"el-temazcal", name:"El Temazcal", cats:["wellness"], x:43, y:76,
+    { id:"el-temazcal", name:"El Temazcal", cats:["wellness"], x:47, y:69,
       desc:{ en:"Nursery / temazcal near the main plaza, at the spot that showed as an unnamed camera icon on the map.",
              es:"Vivero / temazcal cerca de la plaza principal, en el punto que en el mapa aparecía como el ícono de cámara sin nombre." }, reviews:[] },
-    { id:"la-pilona", name:"La Pilona", cats:["wellness"], x:49, y:75,
+    { id:"la-pilona", name:"La Pilona", cats:["wellness"], x:51, y:68,
       desc:{ en:"Wellness spot on the road, east of the main plaza.",
              es:"Punto de bienestar sobre el camino, al este de la plaza principal." }, reviews:[] },
-    { id:"tierra-y-lava", name:"Tierra & Lava", cats:["lodging"], x:69, y:71,
+    { id:"tierra-y-lava", name:"Tierra & Lava", cats:["lodging"], x:68, y:82,
       desc:{ en:"Lodging on the road bend toward the east side of the map, next to Sky Dancer Villa.",
              es:"Alojamiento en la curva del camino hacia el este del mapa, junto a Sky Dancer Villa." }, reviews:[] },
-    { id:"sky-dancer-villa", name:"Sky Dancer Villa", cats:["lodging"], x:73, y:74,
+    { id:"sky-dancer-villa", name:"Sky Dancer Villa", cats:["lodging"], x:72, y:83,
       desc:{ en:"Lodging next to Tierra & Lava, on the same bend of the road.",
              es:"Alojamiento junto a Tierra & Lava, sobre la misma curva del camino." }, reviews:[] },
-    { id:"campanario-de-panchoy", name:"Campanario de Panchoy", cats:["lodging","nature"], x:95, y:90,
+    { id:"campanario-de-panchoy", name:"Campanario de Panchoy", cats:["lodging","nature"], x:96, y:94,
       desc:{ en:"A finca (farm estate) and Airbnb-style lodging — the farthest point of the route, the end of San Cristóbal El Alto.",
              es:"Finca y alojamiento tipo Airbnb — el punto más lejano del recorrido, el final de San Cristóbal El Alto." }, reviews:[] }
   ];
@@ -277,30 +277,32 @@
     + '<g stroke="#8a7550" stroke-width="3" fill="none" opacity="0.55" stroke-linecap="round">'
     +   '<path d="M0,35 H185 M0,62 H165 M0,90 H145 M28,9 V108 M65,9 V115 M102,18 V108 M138,27 V98"/>'
     + '</g>'
-    /* MAIN ROUTE — densely traced waypoints following the real road
-       shape in your overview screenshot: exits San Cristóbal El Bajo
-       (top-left), zigzags past Santa Ana/Los Nísperos, tight hairpin
-       right at Cerro San Cristóbal, bends through Vértigo/La Pilita,
-       threads the plaza, then runs the long stretch southeast to
-       Tierra & Lava, Sky Dancer Villa, and finally Campanario de
-       Panchoy — the end of San Cristóbal El Alto. */
-    + roadPath("200,68 220,93 260,112 240,130 280,146 260,161 280,174 260,180 240,198 270,217 250,229 260,242", 7)
+    /* MAIN ROUTE — re-traced against the actual Google Maps driving
+       route: a small loop out of San Cristóbal El Bajo, zigzag
+       switchbacks down past Santa Ana/Los Nísperos, a tight hairpin
+       right at Cerro San Cristóbal, curving through Sitio Santa Clara
+       into Vértigo Antigua, then one long diagonal past the plaza
+       cluster to Tierra & Lava, Sky Dancer Villa, and finally
+       Campanario de Panchoy — the end of San Cristóbal El Alto. */
+    + roadPath("187,48 130,40 90,52 88,95 133,128", 6)
+    /* zigzag switchbacks past Santa Ana / Los Nísperos */
+    + roadPath("133,128 205,158 155,192 230,222 178,253 269,306", 6)
     /* tight hairpin loop exactly at Cerro San Cristóbal */
-    + roadPath("260,242 230,254 210,267 220,282 250,288 280,282 290,267 260,260 250,273 250,298", 7)
-    /* Sitio Santa Clara through Vértigo / La Pilita */
-    + roadPath("250,298 290,304 330,307 360,310 380,310 400,316 420,322 440,329", 6)
-    /* through the plaza cluster */
-    + roadPath("440,329 430,360 430,391 430,409 430,428 400,434 430,446 430,471 460,465 490,465 520,459", 6)
-    /* long southeast stretch to Tierra&Lava / Sky Dancer / Campanario (the end of the village) */
-    + roadPath("520,459 580,453 630,446 690,440 730,459 800,484 870,515 950,558", 6)
+    + roadPath("269,306 248,320 265,335 271,353", 7)
+    /* Sitio Santa Clara curving right into Vértigo Antigua */
+    + roadPath("271,353 300,362 340,371 383,379", 6)
+    /* long diagonal past the plaza cluster toward Tierra & Lava */
+    + roadPath("383,379 460,386 547,396 600,414 620,434 650,470 678,507", 6)
+    /* Sky Dancer Villa, then the final stretch to Campanario de Panchoy */
+    + roadPath("678,507 700,511 720,513 760,520 800,531 860,555 930,580 965,586", 6)
     /* upper branch off the El Bajo road toward Finca El Pilar / La Máquina / Mirador / Birding Antigua */
-    + roadPath("200,68 260,50 310,25 310,9 340,19 360,34 400,37 460,31 520,37 580,43 630,50 700,62 780,74 840,87 890,99", 5)
+    + roadPath("133,128 220,108 300,93 352,87 378,97 400,100 470,108 550,116 634,128 720,140 800,152 878,168", 5)
     /* sub-branch up to El Mirador del Abuelo */
-    + roadPath("360,34 380,62 400,93 430,133", 4)
+    + roadPath("378,97 395,150 410,180 422,205", 4)
     /* branch down toward the lower settlement (unlabeled for now — road kept for geographic context) */
-    + roadPath("250,298 200,335 160,372 130,409 100,446 80,484", 5)
+    + roadPath("271,353 220,420 180,480 150,520 120,559 84,603", 5)
     + '<g stroke="#8a7550" stroke-width="3" fill="none" opacity="0.5" stroke-linecap="round">'
-    +   '<path d="M20,505 L95,478 L175,510 M45,540 L130,510 M70,565 L155,530"/>'
+    +   '<path d="M120,559 L196,566 M150,520 L366,577 M84,603 L160,608"/>'
     + '</g>'
     + treeCluster(160,40) + treeCluster(870,170) + treeCluster(130,500)
     + treeCluster(60,555) + treeCluster(950,530) + treeCluster(700,110)

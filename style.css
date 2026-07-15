@@ -72,7 +72,10 @@
   .lang-toggle button[aria-pressed="true"]{ background: var(--gold); color: var(--teal-deep); }
 
   .main-grid{ display:grid; grid-template-columns: minmax(0,1fr) 320px; gap: 22px; padding: 22px 20px 0; align-items:start; }
-  @media (max-width: 900px){ .main-grid{ grid-template-columns: 1fr; } }
+  @media (max-width: 900px){
+    .main-grid{ grid-template-columns: 1fr; }
+    .sidebar{ order: -1; }
+  }
 
   .map-frame{
     position:relative; border-radius: 6px; padding: 14px;

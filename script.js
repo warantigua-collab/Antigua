@@ -156,37 +156,36 @@
      server — jsDelivr is edge-cached and noticeably faster,
      especially once a photo has been viewed once by anyone.
 
+     (We tried also routing photos through a live-resizing proxy for
+     smaller thumbnails, but it added more round-trip latency than it
+     saved in bytes and made things slower overall — removed.)
+
+     To actually speed up first-time loads, the site now prefetches a
+     place's photos in the background the moment you hover or focus
+     its pin or its row in the sidebar list — by the time you click,
+     the download is often already underway or finished.
+
      Note: HEIC/HEIF photos (the default format on newer iPhones)
      are skipped, because most browsers can't display HEIC directly
      — convert those to .jpg before adding them (Preview on Mac,
      or "Photos" > Export on iPhone/Mac, or any online converter).
 
      For best load speed, keep source photos under ~1600px on the
-     longest side / ~500KB — resizing below helps a lot regardless,
-     but starting from a smaller original always loads faster still.
+     longest side / ~500KB — that's still the single biggest lever,
+     since no amount of caching or prefetching shrinks the files
+     themselves.
   --------------------------------------------------------- */
   var GITHUB_OWNER = "warantigua-collab";
   var GITHUB_REPO = "Antigua";
   var GITHUB_BRANCH = "main";
   var VALID_PHOTO_EXT = /\.(jpe?g|png|webp|gif)$/i;
   var MAX_PHOTOS_PER_PLACE = 6;
-  var photoCache = {}; // placeId -> array of { thumb, full } CDN URLs (avoids re-fetching per open)
-
-  var THUMB_WIDTH = 340;   // small, fast-loading version used in the gallery grid
-  var LIGHTBOX_WIDTH = 1600; // larger version used when a photo is opened full-size
-  var IMG_QUALITY = 75;
+  var photoCache = {}; // placeId -> array of CDN URLs (avoids re-fetching per open)
+  var prefetchedImages = []; // keeps Image() objects alive so the browser doesn't drop the in-flight/cached request
 
   function jsdelivrUrl(path){
     return "https://cdn.jsdelivr.net/gh/" + GITHUB_OWNER + "/" + GITHUB_REPO
       + "@" + GITHUB_BRANCH + "/" + path.split("/").map(encodeURIComponent).join("/");
-  }
-
-  /* Routes the real photo through wsrv.nl (a free, Cloudflare-backed
-     image cache & resize proxy) so the browser downloads a genuinely
-     small file for thumbnails instead of the full original every time. */
-  function resizedUrl(sourceUrl, width){
-    return "https://wsrv.nl/?url=" + encodeURIComponent(sourceUrl)
-      + "&w=" + width + "&q=" + IMG_QUALITY + "&output=webp";
   }
 
   function fetchPlacePhotos(placeId, callback){
@@ -201,14 +200,31 @@
           .filter(function(f){ return f.type === "file" && VALID_PHOTO_EXT.test(f.name); })
           .sort(function(a,b){ return a.name.localeCompare(b.name, undefined, { numeric:true }); })
           .slice(0, MAX_PHOTOS_PER_PLACE)
-          .map(function(f){
-            var src = jsdelivrUrl(f.path);
-            return { thumb: resizedUrl(src, THUMB_WIDTH), full: resizedUrl(src, LIGHTBOX_WIDTH) };
-          });
+          .map(function(f){ return jsdelivrUrl(f.path); });
         photoCache[placeId] = urls;
         callback(urls);
       })
       .catch(function(){ callback([]); });
+  }
+
+  var prefetchedPlaceIds = {}; // avoids re-triggering the same prefetch on repeated hovers
+
+  /* Starts downloading a place's photos in the background as soon as the
+     person hovers or keyboard-focuses its pin or its row in the sidebar
+     list — well before they actually click. By the time the modal opens,
+     the browser often already has the bytes (or is well into fetching
+     them), which is what actually saves time, rather than adding a resize
+     step that itself costs a round trip. */
+  function prefetchPlacePhotos(placeId){
+    if(prefetchedPlaceIds[placeId]) return;
+    prefetchedPlaceIds[placeId] = true;
+    fetchPlacePhotos(placeId, function(urls){
+      urls.forEach(function(u){
+        var img = new Image();
+        img.src = u;
+        prefetchedImages.push(img); // keep a reference so it isn't garbage-collected mid-download
+      });
+    });
   }
 
   var STORAGE_KEY = "sancristobal_passport_v3";
@@ -387,6 +403,8 @@
       }
 
       btn.addEventListener("click", function(){ openModal(place.id); });
+      btn.addEventListener("mouseenter", function(){ prefetchPlacePhotos(place.id); });
+      btn.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
       mapContainer.appendChild(btn);
     });
   }
@@ -455,6 +473,8 @@
         +   (stamped[place.id] ? '<div class="stamped-check">'+t("stampedCheck")+'</div>' : '')
         + '</span>';
       row.addEventListener("click", function(){ openModal(place.id); });
+      row.addEventListener("mouseenter", function(){ prefetchPlacePhotos(place.id); });
+      row.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
       list.appendChild(row);
     });
   }
@@ -540,7 +560,7 @@
       }
       wrap.innerHTML = urls.map(function(u, i){
         return '<button type="button" class="frame photo-frame" data-idx="'+i+'" '
-          + 'style="background-image:url(\''+u.thumb+'\')" aria-label="View photo '+(i+1)+' larger"></button>';
+          + 'style="background-image:url(\''+u+'\')" aria-label="View photo '+(i+1)+' larger"></button>';
       }).join("");
       wrap.querySelectorAll(".photo-frame").forEach(function(btn){
         btn.addEventListener("click", function(){
@@ -589,7 +609,7 @@
   var lightboxLastFocused = null;
 
   function showLightboxImage(){
-    lightboxImg.src = lightboxUrls[lightboxIndex].full;
+    lightboxImg.src = lightboxUrls[lightboxIndex];
     lightboxCounter.textContent = (lightboxIndex + 1) + " / " + lightboxUrls.length;
   }
 

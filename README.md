@@ -3,9 +3,10 @@
 An interactive, illustrated "treasure map" of San Cristóbal El Alto (Antigua,
 Guatemala), tracing the real shape of the village's roads with pins for
 viewpoints, restaurants, lodging, wellness spots, and landmarks. Visitors can
-search, filter by category, read details on each place, and stamp a digital
-passport as they visit — all saved locally in the browser, no account or
-backend required.
+search, filter by category, read details on each place — including a photo
+gallery with a full-size lightbox viewer (arrow keys / prev-next buttons) —
+and stamp a digital passport as they visit — all saved locally in the
+browser, no account or backend required.
 
 ## Running it
 
@@ -44,8 +45,10 @@ in the `PLACES` array near the top of `script.js`. Each place has:
 
 ## Adding photos
 
-See [`images/README.md`](images/README.md) — no code editing needed, just
-drop numbered image files into the matching folder.
+See [`images/README.md`](images/README.md) — no code editing needed and no
+renaming required, just drop image files into the matching folder with
+whatever filename they already have. Photos are served through jsDelivr's
+CDN for speed; see that file for details.
 
 ## Language
 

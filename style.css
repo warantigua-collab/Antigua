@@ -183,9 +183,44 @@
   }
   .gallery .photo-frame{
     background-size: cover; background-position: center; border: 2px solid var(--ink-soft); text-indent: -9999px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease; margin:0; width:100%; display:block; font: inherit;
   }
   .gallery .photo-frame:hover{ transform: scale(1.03); box-shadow: 0 4px 14px rgba(0,0,0,0.35); }
+
+  /* ---------- lightbox ---------- */
+  .lightbox-backdrop{
+    position: fixed; inset:0; background: rgba(10,14,13,0.94); display:none; align-items:center; justify-content:center;
+    z-index: 1000; padding: 40px;
+  }
+  .lightbox-backdrop.open{ display:flex; }
+  .lightbox-img{
+    max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6); border: 3px solid var(--parchment-dark);
+  }
+  .lightbox-close{
+    position:absolute; top: 18px; right: 18px; width: 42px; height:42px; border-radius:50%;
+    border: 2px solid var(--parchment); background: rgba(0,0,0,0.4); color: var(--parchment); font-size: 1.3rem; line-height:1;
+  }
+  .lightbox-close:hover{ background: var(--parchment); color: var(--ink); }
+  .lightbox-nav{
+    position:absolute; top: 50%; transform: translateY(-50%); width: 54px; height:54px; border-radius:50%;
+    border: 2px solid var(--parchment); background: rgba(0,0,0,0.4); color: var(--parchment); font-size: 2rem; line-height:1;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .lightbox-nav:hover{ background: var(--parchment); color: var(--ink); }
+  .lightbox-prev{ left: 16px; }
+  .lightbox-next{ right: 16px; }
+  .lightbox-counter{
+    position:absolute; bottom: 24px; left:50%; transform: translateX(-50%);
+    font-family:'Space Mono', monospace; font-size: 0.8rem; color: var(--parchment);
+    background: rgba(0,0,0,0.4); padding: 5px 14px; border-radius: 999px;
+  }
+  @media (max-width: 640px){
+    .lightbox-backdrop{ padding: 16px; }
+    .lightbox-nav{ width: 42px; height:42px; font-size: 1.5rem; }
+    .lightbox-prev{ left: 6px; }
+    .lightbox-next{ right: 6px; }
+  }
   .modal-section-title{
     font-family:'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.72rem;
     color: var(--ink-soft); margin: 18px 0 6px; border-bottom: 1px solid var(--ink-soft); padding-bottom: 4px;

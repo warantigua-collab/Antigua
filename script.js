@@ -151,17 +151,31 @@
      Update GITHUB_OWNER / GITHUB_REPO / GITHUB_BRANCH below to
      match your repo if you fork or rename it.
 
+     Actual photo bytes are served through jsDelivr's CDN (a free,
+     public mirror of any GitHub repo) instead of GitHub's raw file
+     server — jsDelivr is edge-cached and noticeably faster,
+     especially once a photo has been viewed once by anyone.
+
      Note: HEIC/HEIF photos (the default format on newer iPhones)
      are skipped, because most browsers can't display HEIC directly
      — convert those to .jpg before adding them (Preview on Mac,
      or "Photos" > Export on iPhone/Mac, or any online converter).
+
+     For best load speed, keep source photos under ~1600px on the
+     longest side / ~500KB — jsDelivr speeds up delivery but doesn't
+     shrink the files themselves.
   --------------------------------------------------------- */
   var GITHUB_OWNER = "warantigua-collab";
   var GITHUB_REPO = "Antigua";
   var GITHUB_BRANCH = "main";
   var VALID_PHOTO_EXT = /\.(jpe?g|png|webp|gif)$/i;
   var MAX_PHOTOS_PER_PLACE = 6;
-  var photoCache = {}; // placeId -> array of download URLs (avoids re-fetching per open)
+  var photoCache = {}; // placeId -> array of CDN URLs (avoids re-fetching per open)
+
+  function jsdelivrUrl(path){
+    return "https://cdn.jsdelivr.net/gh/" + GITHUB_OWNER + "/" + GITHUB_REPO
+      + "@" + GITHUB_BRANCH + "/" + path.split("/").map(encodeURIComponent).join("/");
+  }
 
   function fetchPlacePhotos(placeId, callback){
     if(photoCache[placeId]){ callback(photoCache[placeId]); return; }
@@ -175,7 +189,7 @@
           .filter(function(f){ return f.type === "file" && VALID_PHOTO_EXT.test(f.name); })
           .sort(function(a,b){ return a.name.localeCompare(b.name, undefined, { numeric:true }); })
           .slice(0, MAX_PHOTOS_PER_PLACE)
-          .map(function(f){ return f.download_url; });
+          .map(function(f){ return jsdelivrUrl(f.path); });
         photoCache[placeId] = urls;
         callback(urls);
       })
@@ -509,10 +523,15 @@
           + t("photoPending")(1) + '</div>';
         return;
       }
-      wrap.innerHTML = urls.map(function(u){
-        return '<a class="frame photo-frame" href="'+u+'" target="_blank" rel="noopener" '
-          + 'style="background-image:url(\''+u+'\')" aria-label="Open photo full size"></a>';
+      wrap.innerHTML = urls.map(function(u, i){
+        return '<button type="button" class="frame photo-frame" data-idx="'+i+'" '
+          + 'style="background-image:url(\''+u+'\')" aria-label="View photo '+(i+1)+' larger"></button>';
       }).join("");
+      wrap.querySelectorAll(".photo-frame").forEach(function(btn){
+        btn.addEventListener("click", function(){
+          openLightbox(urls, parseInt(btn.getAttribute("data-idx"), 10));
+        });
+      });
     });
 
     lastFocused = document.activeElement;
@@ -541,6 +560,56 @@
   backdrop.addEventListener("click", function(e){ if(e.target === backdrop) closeModal(); });
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && backdrop.classList.contains("open")) closeModal();
+  });
+
+  /* ---------------------------------------------------------
+     LIGHTBOX — bigger in-page photo viewer with prev/next,
+     replacing the old "open photo in a new tab" behavior.
+  --------------------------------------------------------- */
+  var lightboxBackdrop = document.getElementById("lightboxBackdrop");
+  var lightboxImg = document.getElementById("lightboxImg");
+  var lightboxCounter = document.getElementById("lightboxCounter");
+  var lightboxUrls = [];
+  var lightboxIndex = 0;
+  var lightboxLastFocused = null;
+
+  function showLightboxImage(){
+    lightboxImg.src = lightboxUrls[lightboxIndex];
+    lightboxCounter.textContent = (lightboxIndex + 1) + " / " + lightboxUrls.length;
+  }
+
+  function openLightbox(urls, startIndex){
+    if(!urls || urls.length === 0) return;
+    lightboxUrls = urls;
+    lightboxIndex = startIndex || 0;
+    showLightboxImage();
+    lightboxLastFocused = document.activeElement;
+    lightboxBackdrop.classList.add("open");
+    document.getElementById("lightboxClose").focus();
+  }
+
+  function closeLightbox(){
+    lightboxBackdrop.classList.remove("open");
+    lightboxImg.src = "";
+    if(lightboxLastFocused && typeof lightboxLastFocused.focus === "function") lightboxLastFocused.focus();
+  }
+
+  function lightboxNav(delta){
+    lightboxIndex = (lightboxIndex + delta + lightboxUrls.length) % lightboxUrls.length;
+    showLightboxImage();
+  }
+
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  document.getElementById("lightboxPrev").addEventListener("click", function(){ lightboxNav(-1); });
+  document.getElementById("lightboxNext").addEventListener("click", function(){ lightboxNav(1); });
+  lightboxBackdrop.addEventListener("click", function(e){
+    if(e.target === lightboxBackdrop) closeLightbox();
+  });
+  document.addEventListener("keydown", function(e){
+    if(!lightboxBackdrop.classList.contains("open")) return;
+    if(e.key === "Escape") closeLightbox();
+    if(e.key === "ArrowLeft") lightboxNav(-1);
+    if(e.key === "ArrowRight") lightboxNav(1);
   });
 
   document.getElementById("searchInput").addEventListener("input", function(e){

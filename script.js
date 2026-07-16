@@ -371,9 +371,6 @@
      PINS
   --------------------------------------------------------- */
   var mapContainer = document.getElementById("mapContainer");
-  var mapInner = document.createElement("div");
-  mapInner.className = "map-inner";
-  mapContainer.appendChild(mapInner);
 
   function pinSVG(color){
     return '<svg viewBox="0 0 34 44" xmlns="http://www.w3.org/2000/svg">'
@@ -382,36 +379,128 @@
       + '</svg>';
   }
 
+  /* ---------------------------------------------------------
+     LEAFLET MAP — the hand-illustrated SVG becomes a custom
+     image layer (L.CRS.Simple, no street tiles/geocoding), and
+     pins become Leaflet markers instead of absolutely-positioned
+     buttons. Leaflet owns all pan/zoom/pinch gesture handling
+     natively — see MAP_W/MAP_H and placeLatLng() for how a
+     place's x/y % converts to a Leaflet latlng (note the y-axis
+     flip: Leaflet's latitude increases upward, image y increases
+     downward).
+  --------------------------------------------------------- */
+  var MAP_W = 1000, MAP_H = 620;
+  var mapBounds = [[0,0],[MAP_H, MAP_W]];
+  var leafletMap = null;
+  var markers = {}; // placeId -> L.Marker
+
+  function placeLatLng(place){
+    var px = (place.x / 100) * MAP_W;
+    var py = (place.y / 100) * MAP_H;
+    return [MAP_H - py, px];
+  }
+
+  function initLeafletMap(){
+    var svgDataUri = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(buildTerrainSVG())));
+
+    leafletMap = L.map(mapContainer, {
+      crs: L.CRS.Simple,
+      zoomSnap: 0.25,
+      attributionControl: false,
+      zoomControl: false,
+      zoomAnimation: false,
+      markerZoomAnimation: false,
+      fadeAnimation: false
+    });
+    L.imageOverlay(svgDataUri, mapBounds).addTo(leafletMap);
+    leafletMap.setMaxBounds(mapBounds);
+
+    /* CRS.Simple's zoom 0 means "1 map unit = 1 pixel" — on a small
+       container (e.g. the short mobile map-frame), the whole 1000x620
+       image doesn't fit at zoom 0, let alone anything below it. The
+       zoom level that actually fits the current container size varies
+       with that size, so it's computed on the fly (getBoundsZoom)
+       instead of a fixed minZoom, and recomputed whenever the
+       container itself resizes (orientation change, breakpoint
+       reflow, window resize). */
+    function applyFitZoomRange(){
+      leafletMap.setMinZoom(-10); // un-clamp getBoundsZoom() below so it can report the true fit level
+      var fitZoom = leafletMap.getBoundsZoom(mapBounds);
+      leafletMap.setMinZoom(fitZoom);
+      leafletMap.setMaxZoom(fitZoom + 2.5);
+    }
+    applyFitZoomRange();
+    leafletMap.fitBounds(mapBounds);
+
+    L.control.zoom({
+      position: "topright",
+      zoomInTitle: t("zoomInAria"),
+      zoomOutTitle: t("zoomOutAria")
+    }).addTo(leafletMap);
+
+    var ResetControl = L.Control.extend({
+      options: { position: "topright" },
+      onAdd: function(){
+        var btn = L.DomUtil.create("button", "leaflet-bar reset-view-btn");
+        btn.type = "button";
+        btn.innerHTML = "&#8634;";
+        btn.title = t("zoomResetAria");
+        btn.setAttribute("aria-label", t("zoomResetAria"));
+        L.DomEvent.on(btn, "click", function(e){
+          L.DomEvent.stop(e);
+          applyFitZoomRange();
+          leafletMap.fitBounds(mapBounds);
+        });
+        return btn;
+      }
+    });
+    leafletMap.resetControl = new ResetControl();
+    leafletMap.addControl(leafletMap.resetControl);
+
+    var resizeObserver = new ResizeObserver(function(){
+      leafletMap.invalidateSize();
+      applyFitZoomRange();
+    });
+    resizeObserver.observe(mapContainer);
+  }
+
+  function pinIcon(place, visible){
+    var primaryColor = CATS[place.cats[0]].color;
+    var badge = stamped[place.id] ? '<span class="stamped-badge">✓</span>' : "";
+    var html = '<button type="button" class="pin' + (visible ? "" : " faded") + '">' + pinSVG(primaryColor) + badge + "</button>";
+    return L.divIcon({ className: "pin-icon-wrap", html: html, iconSize: [28,36], iconAnchor: [14,36] });
+  }
+
   function renderPins(){
-    mapInner.querySelectorAll(".pin").forEach(function(p){ p.remove(); });
     var term = searchTerm.trim().toLowerCase();
 
     PLACES.forEach(function(place){
       var matchesFilter = (activeFilter === "all") || (place.cats.indexOf(activeFilter) !== -1);
       var matchesSearch = !term || place.name.toLowerCase().indexOf(term) !== -1;
       var visible = matchesFilter && matchesSearch;
-      var primaryColor = CATS[place.cats[0]].color;
       var catLabels = place.cats.map(catLabel).join(" · ");
+      var label = place.name + " — " + catLabels + (stamped[place.id] ? t("stampedSuffix") : "");
 
-      var btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "pin" + (visible ? "" : " faded");
-      btn.style.left = place.x + "%";
-      btn.style.top = place.y + "%";
-      btn.setAttribute("aria-label", place.name + " — " + catLabels + (stamped[place.id] ? t("stampedSuffix") : ""));
-      btn.innerHTML = pinSVG(primaryColor);
-
-      if(stamped[place.id]){
-        var badge = document.createElement("span");
-        badge.className = "stamped-badge";
-        badge.textContent = "✓";
-        btn.appendChild(badge);
+      var marker = markers[place.id];
+      if(!marker){
+        marker = L.marker(placeLatLng(place), { icon: pinIcon(place, visible), keyboard: true }).addTo(leafletMap);
+        marker.on("click", function(){ openModal(place.id); });
+        marker.on("mouseover", function(){ prefetchPlacePhotos(place.id); });
+        markers[place.id] = marker;
+      } else {
+        marker.setIcon(pinIcon(place, visible));
       }
 
-      btn.addEventListener("click", function(){ openModal(place.id); });
-      btn.addEventListener("mouseenter", function(){ prefetchPlacePhotos(place.id); });
-      btn.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
-      mapInner.appendChild(btn);
+      var el = marker.getElement();
+      if(el){
+        el.setAttribute("aria-label", label);
+        el.style.pointerEvents = visible ? "" : "none";
+        var innerBtn = el.querySelector(".pin");
+        if(innerBtn){
+          innerBtn.setAttribute("aria-label", label);
+          innerBtn.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
+        }
+      }
     });
   }
 
@@ -653,177 +742,6 @@
     if(e.key === "ArrowRight") lightboxNav(1);
   });
 
-  /* ---------------------------------------------------------
-     MAP PAN / ZOOM — drag, wheel (Ctrl/Cmd or trackpad pinch),
-     touch pinch, double-click/double-tap, and the +/-/reset
-     buttons all funnel through zoomAt()/clampMapPosition() so
-     panning always stays within the map's own edges. Pins carry
-     a counter-scale (--pin-scale) so they stay a constant size
-     on screen instead of ballooning as the map zooms in.
-  --------------------------------------------------------- */
-  var MIN_SCALE = 1, MAX_SCALE = 5;
-  var mapScale = 1, mapX = 0, mapY = 0;
-  var lastTapTime = 0, lastTapX = 0, lastTapY = 0;
-
-  function applyMapTransform(){
-    mapInner.style.transform = "translate(" + mapX + "px," + mapY + "px) scale(" + mapScale + ")";
-    mapContainer.style.setProperty("--pin-scale", 1 / mapScale);
-  }
-
-  function clampMapPosition(){
-    var rect = mapContainer.getBoundingClientRect();
-    var scaledW = rect.width * mapScale, scaledH = rect.height * mapScale;
-    var minX = Math.min(0, rect.width - scaledW), minY = Math.min(0, rect.height - scaledH);
-    mapX = Math.max(minX, Math.min(0, mapX));
-    mapY = Math.max(minY, Math.min(0, mapY));
-  }
-
-  function zoomAt(anchorX, anchorY, nextScale){
-    nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, nextScale));
-    var mapPointX = (anchorX - mapX) / mapScale;
-    var mapPointY = (anchorY - mapY) / mapScale;
-    mapScale = nextScale;
-    mapX = anchorX - mapPointX * mapScale;
-    mapY = anchorY - mapPointY * mapScale;
-    clampMapPosition();
-    applyMapTransform();
-  }
-
-  function resetMapView(){
-    mapScale = 1; mapX = 0; mapY = 0;
-    applyMapTransform();
-  }
-
-  /* plain scroll keeps scrolling the page; only Ctrl/Cmd+wheel (or a
-     trackpad pinch, which browsers report as a ctrl-wheel event) zooms
-     the map — same convention Google Maps embeds use to avoid trapping
-     the page scroll when the cursor happens to be over the map. */
-  mapContainer.addEventListener("wheel", function(e){
-    if(!(e.ctrlKey || e.metaKey)) return;
-    e.preventDefault();
-    var rect = mapContainer.getBoundingClientRect();
-    var factor = e.deltaY < 0 ? 1.2 : 1 / 1.2;
-    zoomAt(e.clientX - rect.left, e.clientY - rect.top, mapScale * factor);
-  }, { passive: false });
-
-  document.getElementById("zoomInBtn").addEventListener("click", function(){
-    var rect = mapContainer.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, mapScale * 1.4);
-  });
-  document.getElementById("zoomOutBtn").addEventListener("click", function(){
-    var rect = mapContainer.getBoundingClientRect();
-    zoomAt(rect.width / 2, rect.height / 2, mapScale / 1.4);
-  });
-  document.getElementById("zoomResetBtn").addEventListener("click", resetMapView);
-
-  /* ---- mouse drag (desktop) — tracked on document so dragging past the
-     map's edge doesn't drop the gesture ---- */
-  var mouseDragging = false, mouseStartX = 0, mouseStartY = 0, mouseStartMapX = 0, mouseStartMapY = 0;
-
-  mapContainer.addEventListener("mousedown", function(e){
-    if(e.target.closest(".pin, .map-zoom-controls")) return;
-    mouseDragging = true;
-    mouseStartX = e.clientX; mouseStartY = e.clientY;
-    mouseStartMapX = mapX; mouseStartMapY = mapY;
-    mapContainer.classList.add("dragging");
-    e.preventDefault();
-  });
-  document.addEventListener("mousemove", function(e){
-    if(!mouseDragging) return;
-    mapX = mouseStartMapX + (e.clientX - mouseStartX);
-    mapY = mouseStartMapY + (e.clientY - mouseStartY);
-    clampMapPosition();
-    applyMapTransform();
-  });
-  document.addEventListener("mouseup", function(){
-    if(!mouseDragging) return;
-    mouseDragging = false;
-    mapContainer.classList.remove("dragging");
-  });
-  mapContainer.addEventListener("dblclick", function(e){
-    var rect = mapContainer.getBoundingClientRect();
-    zoomAt(e.clientX - rect.left, e.clientY - rect.top, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
-  });
-
-  /* ---- touch: single-finger pan, two-finger pinch, double-tap ----
-     Built on native Touch Events rather than Pointer Events — iOS Safari's
-     multi-touch Pointer Event support has long-standing reliability gaps
-     for exactly this kind of two-finger gesture, while Touch Events (with
-     their e.touches list of everything currently down) are the oldest,
-     most battle-tested touch API on iOS. */
-  var touchMode = null; // "pan" | "pinch" | null
-  var touchMoved = false;
-  var touchStartX = 0, touchStartY = 0, touchStartMapX = 0, touchStartMapY = 0;
-  var pinchStartDist = 0, pinchStartScale = 1, pinchStartCenter = { x: 0, y: 0 };
-
-  function touchDistance(a, b){ return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY); }
-  function touchCenter(a, b, rect){
-    return { x: (a.clientX + b.clientX) / 2 - rect.left, y: (a.clientY + b.clientY) / 2 - rect.top };
-  }
-
-  mapContainer.addEventListener("touchstart", function(e){
-    if(e.target.closest(".pin, .map-zoom-controls")) return;
-    e.preventDefault();
-    var rect = mapContainer.getBoundingClientRect();
-    if(e.touches.length === 1){
-      touchMode = "pan";
-      touchMoved = false;
-      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
-      touchStartMapX = mapX; touchStartMapY = mapY;
-    } else if(e.touches.length === 2){
-      touchMode = "pinch";
-      pinchStartDist = touchDistance(e.touches[0], e.touches[1]);
-      pinchStartScale = mapScale;
-      pinchStartCenter = touchCenter(e.touches[0], e.touches[1], rect);
-    }
-  }, { passive: false });
-
-  mapContainer.addEventListener("touchmove", function(e){
-    if(!touchMode) return;
-    e.preventDefault();
-    if(touchMode === "pan" && e.touches.length === 1){
-      var dx = e.touches[0].clientX - touchStartX, dy = e.touches[0].clientY - touchStartY;
-      if(Math.abs(dx) > 3 || Math.abs(dy) > 3) touchMoved = true;
-      mapX = touchStartMapX + dx;
-      mapY = touchStartMapY + dy;
-      clampMapPosition();
-      applyMapTransform();
-    } else if(touchMode === "pinch" && e.touches.length === 2 && pinchStartDist > 0){
-      var dist = touchDistance(e.touches[0], e.touches[1]);
-      zoomAt(pinchStartCenter.x, pinchStartCenter.y, pinchStartScale * (dist / pinchStartDist));
-    }
-  }, { passive: false });
-
-  function onTouchEnd(e){
-    if(touchMode === "pan" && !touchMoved){
-      var rect = mapContainer.getBoundingClientRect();
-      var t = e.changedTouches[0];
-      var x = t.clientX - rect.left, y = t.clientY - rect.top;
-      var now = Date.now();
-      if(now - lastTapTime < 350 && Math.hypot(x - lastTapX, y - lastTapY) < 30){
-        zoomAt(x, y, mapScale < MAX_SCALE ? mapScale * 1.6 : MIN_SCALE);
-        lastTapTime = 0;
-      } else {
-        lastTapTime = now; lastTapX = x; lastTapY = y;
-      }
-    }
-
-    if(e.touches.length === 1){
-      // one finger remains after a pinch ends — resume it as a plain pan
-      touchMode = "pan";
-      touchMoved = true; // avoids mis-firing a tap-zoom right after a pinch
-      touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
-      touchStartMapX = mapX; touchStartMapY = mapY;
-    } else if(e.touches.length === 0){
-      touchMode = null;
-    }
-    pinchStartDist = 0;
-  }
-  mapContainer.addEventListener("touchend", onTouchEnd);
-  mapContainer.addEventListener("touchcancel", function(){ touchMode = null; pinchStartDist = 0; });
-
-  window.addEventListener("resize", function(){ clampMapPosition(); applyMapTransform(); });
-
   document.getElementById("searchInput").addEventListener("input", function(e){
     searchTerm = e.target.value || "";
     renderPins();
@@ -874,9 +792,15 @@
     document.getElementById("resetPassport").textContent = t("resetPassport");
     document.getElementById("txt-footer").textContent = t("footer");
     document.getElementById("modalClose").setAttribute("aria-label", t("modalClose"));
-    document.getElementById("zoomInBtn").setAttribute("aria-label", t("zoomInAria"));
-    document.getElementById("zoomOutBtn").setAttribute("aria-label", t("zoomOutAria"));
-    document.getElementById("zoomResetBtn").setAttribute("aria-label", t("zoomResetAria"));
+    if(leafletMap){
+      var zoomInEl = mapContainer.querySelector(".leaflet-control-zoom-in");
+      var zoomOutEl = mapContainer.querySelector(".leaflet-control-zoom-out");
+      if(zoomInEl){ zoomInEl.title = t("zoomInAria"); zoomInEl.setAttribute("aria-label", t("zoomInAria")); }
+      if(zoomOutEl){ zoomOutEl.title = t("zoomOutAria"); zoomOutEl.setAttribute("aria-label", t("zoomOutAria")); }
+      var resetEl = leafletMap.resetControl.getContainer();
+      resetEl.title = t("zoomResetAria");
+      resetEl.setAttribute("aria-label", t("zoomResetAria"));
+    }
   }
 
   function setLang(lang){
@@ -899,7 +823,7 @@
   });
 
   function init(){
-    mapInner.insertAdjacentHTML("afterbegin", buildTerrainSVG());
+    initLeafletMap();
     applyStaticStrings();
     renderLegend();
     renderFilterChips();

@@ -8,7 +8,7 @@ A single-page, static "treasure map" site for San Cristóbal El Alto (Antigua, G
 
 ## Running / developing
 
-No build step, no package manager, no dependencies.
+No build step, no package manager. One external dependency: Leaflet 1.9.4, loaded via `<link>`/`<script>` tags from unpkg in `index.html` with Subresource Integrity hashes (same CDN-link pattern already used for Google Fonts) — nothing to install.
 
 - Open `index.html` directly in a browser to work on layout, styling, or map/pin logic.
 - **Photo galleries require the site to be served from GitHub Pages** (or any host that can reach `api.github.com`) — they fetch `images/<place-id>/` folder contents live via the GitHub API and serve the actual bytes through jsDelivr's CDN. Opening `index.html` from disk will show "photo pending" placeholders instead, which is expected, not a bug.
@@ -26,9 +26,19 @@ Three files, no modules: `index.html` (markup only) → `style.css` (all styling
 
 To add or move a place, edit `PLACES` directly — there's no admin UI or separate config file.
 
-### Map rendering is hand-drawn SVG, not a tile/GPS map
+### Map rendering is hand-drawn SVG inside Leaflet, not street tiles
 
-`buildTerrainSVG()` and its helpers (`roadPath`, `contourGroup`, `forestPatches`, `treeCluster`, `compassRose`) generate the background terrain and road network as literal coordinate paths, traced by hand from reference screenshots to match the real road shape — this is *not* geographically accurate and isn't meant to be. Pins are separately positioned by the `x`/`y` percentages in `PLACES` and rendered as absolutely-positioned buttons in `renderPins()`, not as part of the SVG itself.
+`buildTerrainSVG()` and its helpers (`roadPath`, `contourGroup`, `forestPatches`, `treeCluster`, `compassRose`) generate the background terrain and road network as literal coordinate paths on a 1000×620 canvas, traced by hand from reference screenshots (and later a Google Maps screenshot of the real route) to match the real road shape — this is *not* geographically accurate and isn't meant to be, and there's no street data or geocoding anywhere in the site.
+
+That SVG is handed to Leaflet as a custom image layer instead of a tile layer: `initLeafletMap()` base64-encodes `buildTerrainSVG()`'s output into a data URI and adds it via `L.imageOverlay` under `L.CRS.Simple` (a non-geographic coordinate system for exactly this "my own image, not the Earth" use case). Leaflet owns all pan/zoom/pinch gesture handling natively — there is no hand-rolled pointer/touch code in this file, deliberately: an earlier hand-rolled implementation had real reliability gaps (Pointer Events' known multi-touch gaps on iOS Safari, buttons nested inside the drag area needing exclusion from the drag handler, a `will-change:transform` performance fix that blurred the map at high zoom) that Leaflet's mature, widely-deployed engine sidesteps for free.
+
+Two non-obvious things about the Leaflet setup, both in `initLeafletMap()`:
+
+- **The y-axis is flipped.** `CRS.Simple` latitude increases *upward*, but the SVG's y-coordinate increases *downward* like any image. `placeLatLng()` converts a place's `x`/`y` % into a Leaflet latlng via `[MAP_H - py, px]` — dropping the `MAP_H -` inversion silently mirrors every pin vertically.
+- **`minZoom`/`maxZoom` are computed per container size, not hardcoded.** `CRS.Simple` zoom 0 means "1 map unit = 1 pixel," which is already too zoomed-in to fit the whole 1000×620 image inside a short mobile map-frame. `applyFitZoomRange()` temporarily sets `minZoom` very low, calls `getBoundsZoom()` to find the zoom that actually fits the *current* container, then sets that as the real `minZoom` (and `+2.5` as `maxZoom`) — recomputed on every resize via a `ResizeObserver` on `mapContainer`. (`getBoundsZoom()` clamps its own answer to the map's current `minZoom`, which is why the low temporary value has to be set first — otherwise it can never report a fit level below whatever `minZoom` already is.)
+- **Zoom animation is off** (`zoomAnimation`/`markerZoomAnimation`/`fadeAnimation: false`). Leaflet's animated zoom depends on a `transitionend` CSS callback that didn't reliably fire in testing; zoom is instant instead of animated as a reliability tradeoff.
+
+Pins are Leaflet markers (`L.marker` + `L.divIcon`, built in `pinIcon()`), not part of the SVG or absolutely-positioned buttons — `renderPins()` creates one marker per place on first render and calls `marker.setIcon()` on subsequent renders (search/filter/language/stamping) rather than recreating markers. Markers stay a constant on-screen size regardless of zoom level, which is Leaflet's native marker behavior, not something this code manages.
 
 ### Render functions are called imperatively, not reactively
 

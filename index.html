@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=IM+Fell+English:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -36,13 +37,7 @@
   <div class="main-grid">
 
     <section class="map-frame" aria-label="Illustrated map of San Cristóbal El Alto">
-      <div class="map-container" id="mapContainer">
-        <div class="map-zoom-controls" id="mapZoomControls">
-          <button type="button" id="zoomInBtn" aria-label="Zoom in">+</button>
-          <button type="button" id="zoomOutBtn" aria-label="Zoom out">&minus;</button>
-          <button type="button" id="zoomResetBtn" aria-label="Reset map view">&#8634;</button>
-        </div>
-      </div>
+      <div class="map-container" id="mapContainer"></div>
       <div class="legend" id="legendRow"></div>
       <p class="map-caption" id="txt-map-caption">
         Hand-illustrated map, traced over the real position and shape of the streets from your reference screenshots — not a GPS-scale map.<br>
@@ -96,6 +91,7 @@
   <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script src="script.js"></script>
 </body>
 </html>

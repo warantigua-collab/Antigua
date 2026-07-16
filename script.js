@@ -50,7 +50,6 @@
       stampedSuffix: " (stamped)",
       stampedCheck: "✓ Stamped in your passport",
       emptySearch: "No place matches your search. Try another term or clear the filter.",
-      progressPill: function(count,total){ return count + " / " + total + " stamped"; },
       passportSummary: function(count,total){ return count + " of " + total + " places discovered"; }
     },
     es: {
@@ -96,7 +95,6 @@
       stampedSuffix: " (sellado)",
       stampedCheck: "✓ Sellado en tu pasaporte",
       emptySearch: "Ningún lugar coincide con tu búsqueda. Prueba otro término o quita el filtro.",
-      progressPill: function(count,total){ return count + " / " + total + " sellados"; },
       passportSummary: function(count,total){ return count + " de " + total + " lugares descubiertos"; }
     }
   };
@@ -700,7 +698,6 @@
     }).length;
 
     document.getElementById("passportSummary").textContent = t("passportSummary")(count, total);
-    document.getElementById("progressPill").textContent = t("progressPill")(count, total);
   }
 
   var backdrop = document.getElementById("modalBackdrop");

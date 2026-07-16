@@ -92,7 +92,7 @@
     background: radial-gradient(ellipse at 50% -20%, rgba(201,162,39,0.18), transparent 60%), var(--teal-deep);
     border-bottom: 10px solid transparent; border-image: var(--ribbon) 30;
   }
-  header.masthead .eyebrow{ font-family: 'Space Mono', monospace; letter-spacing: 3px; text-transform: uppercase; font-size: 0.7rem; color: var(--gold-bright); margin: 0 0 6px; }
+  header.masthead .eyebrow{ font-family: 'Space Mono', monospace; letter-spacing: 3px; text-transform: uppercase; font-size: 0.78rem; color: var(--gold-bright); margin: 0 0 6px; }
   header.masthead h1{ font-size: clamp(2.1rem, 6vw, 3.4rem); margin: 0; text-shadow: 0 2px 0 rgba(0,0,0,0.4); }
   header.masthead p.village-intro{
     margin: 10px auto 0; max-width: 780px; font-size: 1.08rem; line-height: 1.75;
@@ -136,7 +136,7 @@
   .search-wrap{ position:relative; flex: 1 1 260px; max-width: 420px; margin: 0 auto; }
   .search-wrap input{
     width:100%; padding: 11px 16px 11px 38px; border-radius: 999px; border: 2px solid var(--gold);
-    background: var(--parchment); color: var(--ink); font-size: 0.95rem; font-family: 'IM Fell English', serif;
+    background: var(--parchment); color: var(--ink); font-size: 1.05rem; font-family: 'IM Fell English', serif;
     transition: box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
   }
   .search-wrap input:focus-visible{ box-shadow: 0 0 0 4px rgba(201,162,39,0.25); }
@@ -144,7 +144,7 @@
   .filters{ display:flex; flex-wrap:wrap; gap: 12px; justify-content:center; flex: 1 1 100%; }
   .chip{
     border: 1.5px solid var(--gold); background: transparent; color: var(--parchment); padding: 8px 16px;
-    border-radius: 999px; font-size: 0.82rem; font-family: 'Space Mono', monospace; white-space: nowrap;
+    border-radius: 999px; font-size: 0.92rem; font-family: 'Space Mono', monospace; white-space: nowrap;
   }
   .chip:hover{ transform: translateY(-1px); box-shadow: var(--shadow-1); }
   .chip:active{ transform: translateY(0) scale(0.96); }
@@ -157,7 +157,7 @@
   }
   .lang-toggle button{
     border:none; background: transparent; color: var(--parchment); padding: 8px 14px;
-    font-family:'Space Mono', monospace; font-size: 0.78rem; font-weight:700; letter-spacing:0.5px;
+    font-family:'Space Mono', monospace; font-size: 0.86rem; font-weight:700; letter-spacing:0.5px;
   }
   .lang-toggle button[aria-pressed="true"]{ background: var(--gold); color: var(--teal-deep); }
 
@@ -168,7 +168,7 @@
     flex: 0 0 auto; min-width: 150px; padding: 13px 26px; border: 2px solid var(--gold);
     background: rgba(22,53,47,0.6); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%);
     color: var(--parchment); font-family:'Space Mono', monospace;
-    font-size: 0.9rem; font-weight:700; letter-spacing: 0.5px;
+    font-size: 1rem; font-weight:700; letter-spacing: 0.5px;
   }
   .main-view-toggle button:first-child{ border-radius: 999px 0 0 999px; border-right: none; }
   .main-view-toggle button:last-child{ border-radius: 0 999px 999px 0; }
@@ -188,7 +188,7 @@
        320px permanent sidebar this styling was originally sized for —
        scale text, thumbnails and spacing up instead of leaving them
        looking small and lost in the middle of a wide screen. */
-    .main-grid.view-places .sidebar-tabs button{ font-size: 0.9rem; padding: 16px 8px; }
+    .main-grid.view-places .sidebar-tabs button{ font-size: 1rem; padding: 16px 8px; }
     .main-grid.view-places .sidebar-panel{ padding: 22px; }
     .main-grid.view-places #placeList{
       display:grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 14px;
@@ -200,10 +200,10 @@
     .main-grid.view-places .place-row .info small{ font-size: 0.78rem; }
     .main-grid.view-places .place-row .stamped-check{ font-size: 0.78rem; }
     .main-grid.view-places .passport-grid{ grid-template-columns: repeat(6, 1fr); gap: 16px; padding: 8px; }
-    .main-grid.view-places .stamp-slot{ font-size: 0.62rem; }
-    .main-grid.view-places .stamp-slot .glyph{ font-size: 1.6rem; }
-    .main-grid.view-places .passport-footer{ font-size: 0.85rem; }
-    .main-grid.view-places .empty-note{ font-size: 0.95rem; padding: 40px 10px; }
+    .main-grid.view-places .stamp-slot{ font-size: 0.7rem; }
+    .main-grid.view-places .stamp-slot .glyph{ font-size: 1.7rem; }
+    .main-grid.view-places .passport-footer{ font-size: 0.95rem; }
+    .main-grid.view-places .empty-note{ font-size: 1.05rem; padding: 40px 10px; }
   }
   @media (max-width: 900px){
     .main-view-toggle{ display:none; }
@@ -254,13 +254,13 @@
   .pin-icon-wrap{ background:none; border:none; }
 
   .map-caption{
-    font-family:'Space Mono', monospace; font-size: 0.7rem; text-align:center; color: var(--ink-soft);
+    font-family:'Space Mono', monospace; font-size: 0.8rem; text-align:center; color: var(--ink-soft);
     margin-top: 10px; letter-spacing: 0.4px; line-height:1.6;
   }
 
   .legend{
     display:flex; flex-wrap:wrap; gap: 8px 16px; justify-content:center; margin-top: 12px;
-    font-family:'Space Mono', monospace; font-size: 0.68rem; color: var(--parchment);
+    font-family:'Space Mono', monospace; font-size: 0.76rem; color: var(--parchment);
   }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
   .legend i{ width:11px; height:11px; border-radius:50% 50% 50% 0; transform: rotate(-45deg); display:inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.4); }
@@ -272,7 +272,7 @@
   .sidebar-tabs{ display:flex; border-bottom: 2px solid var(--ink-soft); }
   .sidebar-tabs button{
     flex:1; background: var(--parchment-dark); border:none; padding: 13px 8px; font-family: 'Space Mono', monospace;
-    font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); border-right: 1px solid var(--ink-soft);
+    font-size: 0.84rem; letter-spacing: 1px; text-transform: uppercase; color: var(--ink-soft); border-right: 1px solid var(--ink-soft);
   }
   .sidebar-tabs button:last-child{ border-right:none; }
   .sidebar-tabs button[aria-selected="true"]{ background: var(--parchment); color: var(--ink); font-weight:700; }
@@ -291,23 +291,23 @@
   .place-row .info small{ font-family:'Space Mono', monospace; font-size:0.66rem; color:var(--ink-soft); }
   .place-row .stamped-check{ color: var(--brick); font-family:'Space Mono',monospace; font-size:0.68rem; }
 
-  .empty-note{ font-family:'Space Mono', monospace; font-size:0.8rem; color: var(--ink-soft); text-align:center; padding: 20px 10px; }
+  .empty-note{ font-family:'Space Mono', monospace; font-size:0.9rem; color: var(--ink-soft); text-align:center; padding: 20px 10px; }
 
   .passport-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px; }
   .stamp-slot{
     aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--ink-soft); display:flex; align-items:center; justify-content:center;
     flex-direction:column; text-align:center; padding: 5px; background: transparent; color: var(--ink-soft);
-    font-family:'Space Mono', monospace; font-size: 0.54rem; line-height:1.1; position:relative;
+    font-family:'Space Mono', monospace; font-size: 0.62rem; line-height:1.1; position:relative;
   }
   .stamp-slot.done{ border-style: solid; border-color: var(--brick); color: var(--brick); background: rgba(168,70,28,0.08); animation: stampland 0.35s ease; transform: rotate(-8deg); }
-  .stamp-slot .glyph{ font-size: 1.2rem; margin-bottom:2px; }
+  .stamp-slot .glyph{ font-size: 1.3rem; margin-bottom:2px; }
   @keyframes stampland{ 0%{ transform: scale(1.8) rotate(-18deg); opacity:0; } 60%{ transform: scale(0.9) rotate(6deg); opacity:1; } 100%{ transform: scale(1) rotate(-8deg); } }
 
   .passport-footer{
     padding: 10px 14px 16px; border-top: 1px solid var(--ink-soft); display:flex; align-items:center;
-    justify-content: space-between; gap:10px; font-family:'Space Mono', monospace; font-size: 0.72rem;
+    justify-content: space-between; gap:10px; font-family:'Space Mono', monospace; font-size: 0.82rem;
   }
-  .reset-btn{ background:none; border: 1px solid var(--ink-soft); color: var(--ink-soft); border-radius: 999px; padding: 7px 14px; font-size: 0.68rem; }
+  .reset-btn{ background:none; border: 1px solid var(--ink-soft); color: var(--ink-soft); border-radius: 999px; padding: 7px 14px; font-size: 0.76rem; }
   .reset-btn:hover{ background: var(--ink-soft); color: var(--parchment); }
   .reset-btn:active{ transform: scale(0.96); }
 
@@ -327,11 +327,11 @@
   }
   .badge-row{ display:flex; flex-wrap:wrap; gap: 6px; margin-bottom: 6px; }
   .badge-row .badge, .modal-head .badge{
-    display:inline-flex; align-items:center; gap:6px; font-family:'Space Mono', monospace; font-size: 0.68rem;
+    display:inline-flex; align-items:center; gap:6px; font-family:'Space Mono', monospace; font-size: 0.76rem;
     text-transform: uppercase; letter-spacing: 1px; color: var(--parchment); padding: 3px 9px; border-radius: 999px;
   }
-  .modal-head h2{ margin: 0; font-size: 1.8rem; }
-  .modal-head .coords{ font-family:'Space Mono',monospace; font-size:0.7rem; color: var(--ink-soft); }
+  .modal-head h2{ margin: 0; font-size: 2rem; }
+  .modal-head .coords{ font-family:'Space Mono',monospace; font-size:0.78rem; color: var(--ink-soft); }
   .modal-close{
     position:absolute; top: 12px; right: 12px; width: 34px; height:34px; border-radius:50%; border: 2px solid var(--ink-soft);
     background: var(--parchment); font-size: 1.1rem; line-height:1; color: var(--ink);
@@ -342,7 +342,7 @@
   .gallery{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
   .gallery .frame{
     aspect-ratio: 4/3; border-radius: var(--r-s); display:flex; align-items:center; justify-content:center; text-align:center;
-    font-family:'Space Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.85); padding: 6px; border: 1px dashed rgba(255,255,255,0.5);
+    font-family:'Space Mono', monospace; font-size: 0.68rem; color: rgba(255,255,255,0.85); padding: 6px; border: 1px dashed rgba(255,255,255,0.5);
   }
   .gallery .photo-frame{
     background-size: cover; background-position: center; border: 2px solid var(--ink-soft); text-indent: -9999px;
@@ -377,7 +377,7 @@
   .lightbox-next{ right: 16px; }
   .lightbox-counter{
     position:absolute; bottom: 24px; left:50%; transform: translateX(-50%);
-    font-family:'Space Mono', monospace; font-size: 0.8rem; color: var(--parchment);
+    font-family:'Space Mono', monospace; font-size: 0.88rem; color: var(--parchment);
     background: rgba(0,0,0,0.4); padding: 5px 14px; border-radius: 999px;
   }
   @media (max-width: 640px){
@@ -387,29 +387,29 @@
     .lightbox-next{ right: 6px; }
   }
   .modal-section-title{
-    font-family:'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.72rem;
+    font-family:'Space Mono', monospace; text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.8rem;
     color: var(--ink-soft); margin: 18px 0 6px; border-bottom: 1px solid var(--ink-soft); padding-bottom: 4px;
   }
-  .modal-body p.desc{ line-height: 1.6; margin: 0 0 8px; }
-  .video-note{ border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 14px; font-family:'Space Mono', monospace; font-size: 0.75rem; color: var(--ink-soft); text-align:center; }
+  .modal-body p.desc{ font-size: 1.02rem; line-height: 1.65; margin: 0 0 8px; }
+  .video-note{ border: 1px dashed var(--ink-soft); border-radius: 6px; padding: 14px; font-family:'Space Mono', monospace; font-size: 0.84rem; color: var(--ink-soft); text-align:center; }
   .review{ border-top: 1px solid rgba(54,42,31,0.15); padding: 10px 0; }
   .review:first-child{ border-top:none; }
-  .review .stars{ color: var(--brick); letter-spacing: 2px; font-size: 0.85rem; }
-  .review .who{ font-family:'Space Mono', monospace; font-size: 0.68rem; color: var(--ink-soft); }
-  .review p{ margin: 4px 0 0; line-height:1.5; }
+  .review .stars{ color: var(--brick); letter-spacing: 2px; font-size: 0.95rem; }
+  .review .who{ font-family:'Space Mono', monospace; font-size: 0.76rem; color: var(--ink-soft); }
+  .review p{ font-size: 1.02rem; margin: 4px 0 0; line-height:1.5; }
   .stamp-action{ margin-top: 18px; display:flex; align-items:center; gap: 12px; flex-wrap:wrap; }
   .stamp-btn{
     background: var(--teal); color: var(--parchment); border: none; padding: 13px 22px; border-radius: 999px;
-    font-family: 'Space Mono', monospace; font-size: 0.85rem; letter-spacing: 0.5px; display:inline-flex; align-items:center; gap:8px;
+    font-family: 'Space Mono', monospace; font-size: 0.95rem; letter-spacing: 0.5px; display:inline-flex; align-items:center; gap:8px;
     box-shadow: var(--shadow-1);
   }
   .stamp-btn:hover{ background: var(--teal-deep); box-shadow: var(--shadow-2); transform: translateY(-1px); }
   .stamp-btn:active{ transform: translateY(0) scale(0.97); }
   .stamp-btn[data-stamped="true"]{ background: var(--brick); }
-  .stamp-hint{ font-family:'Space Mono', monospace; font-size: 0.68rem; color: var(--ink-soft); }
+  .stamp-hint{ font-family:'Space Mono', monospace; font-size: 0.76rem; color: var(--ink-soft); }
 
   footer.site-footer{
-    text-align:center; color: var(--parchment); opacity: 0.7; font-family:'Space Mono', monospace; font-size: 0.7rem;
+    text-align:center; color: var(--parchment); opacity: 0.7; font-family:'Space Mono', monospace; font-size: 0.8rem;
     padding: 24px 20px 10px; line-height:1.7; margin-top: 12px;
     border-top: 6px solid transparent; border-image: var(--ribbon) 18;
   }
@@ -453,6 +453,10 @@
   @media (max-width: 640px){
     .controls{ flex-direction:column; align-items:stretch; }
     .search-wrap{ max-width:none; flex: 0 0 auto; margin: 0; }
+    /* the desktop bump to 1.05rem overflows the placeholder text past
+       narrow mobile widths; 1rem is still bigger than the original
+       0.95rem and fits with room to spare. */
+    .search-wrap input{ font-size: 1rem; }
     .gallery{ grid-template-columns: repeat(2,1fr); }
     .sidebar{ max-height:none; }
     .leaflet-control-zoom a{ width: 30px !important; height:30px !important; line-height:30px !important; }

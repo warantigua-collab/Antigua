@@ -47,20 +47,38 @@ Only have 1 photo for a place right now? Just add that one — the rest of
 the gallery keeps showing the "photo pending" placeholder until more show
 up. Nothing breaks either way.
 
+## Speed up the map's place list: add a "default" photo
+
+The map view's place list shows a small thumbnail next to each place.
+That thumbnail doesn't ask GitHub what's in the folder — it just tries to
+load a file named exactly **`default`** (`default.jpg`, `default.png`,
+etc.) directly. If one exists, it shows up basically instantly; if not,
+the list falls back to a plain colored icon for that place, which is
+also fine.
+
+This is optional but recommended: pick your best photo of a place, save
+a copy of it as `default.jpg` (reusing an existing photo's content under
+a new filename is fine) in that place's folder alongside the rest. The
+full photo gallery inside a place's popup still shows every photo in the
+folder as usual, `default.jpg` included.
+
 ## How this works technically
 
-The site calls the GitHub API (`api.github.com`) at load time to list the
-contents of each `images/<place-id>/` folder and renders whatever image
-files it finds. This means:
+Besides the `default.<ext>` fast path above, the full gallery shown when
+you open a place still calls the GitHub API (`api.github.com`) at load
+time to list the contents of each `images/<place-id>/` folder and
+renders whatever image files it finds. This means:
 
 - It only works once the site is actually hosted on GitHub Pages (or
   anywhere that can reach `api.github.com`) — opening `index.html` directly
   from your own computer won't show photos, since there's no repo to ask.
 - If you fork this repo or rename it, update `GITHUB_OWNER` / `GITHUB_REPO`
   / `GITHUB_BRANCH` near the top of `script.js` to match.
-- The GitHub API allows a modest number of unauthenticated requests per
-  hour per visitor — plenty for normal traffic on a small site, but worth
-  knowing if it ever stops finding photos temporarily under heavy load.
+- GitHub's unauthenticated API allows only 60 requests per hour per
+  visitor IP — easy to hit if a folder is checked on every single page
+  load. Full listings are cached in `localStorage` for an hour so repeat
+  visits don't re-spend that budget, and the `default.<ext>` fast path
+  above doesn't call this API at all, which is the main reason to add one.
 
 ## GitHub Pages
 

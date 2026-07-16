@@ -194,8 +194,61 @@
       + "@" + GITHUB_BRANCH + "/" + path.split("/").map(encodeURIComponent).join("/");
   }
 
+  /* DEFAULT PHOTO — a file named exactly "default.<ext>" inside a place's
+     images/<place-id>/ folder is a fast path that completely bypasses the
+     GitHub Contents API listing call below: the URL is built directly by
+     naming convention, so the browser can start requesting it the instant
+     a row/modal renders, with zero network round-trips spent discovering
+     what's there first. Since the extension isn't known in advance, an
+     <img> tries each candidate in turn via onerror and stops at the first
+     one that actually exists — cheap, since a jsDelivr 404 is fast, and
+     still far faster than a GitHub API round trip. Optional: places
+     without a default.* file just keep using the full listing below. */
+  var DEFAULT_PHOTO_EXTS = ["jpg","jpeg","png","webp","gif"];
+
+  function defaultThumbCandidates(placeId){
+    return DEFAULT_PHOTO_EXTS.map(function(ext){ return jsdelivrUrl("images/" + placeId + "/default." + ext); });
+  }
+
+  /* Tries each candidate URL on imgEl in order (via onerror fallthrough)
+     until one loads; calls onFail if none of them exist. */
+  function loadFirstWorkingImage(imgEl, candidates, onLoad, onFail){
+    var i = 0;
+    imgEl.onload = function(){ if(onLoad) onLoad(imgEl.src); };
+    imgEl.onerror = function(){
+      if(i >= candidates.length){ if(onFail) onFail(); return; }
+      imgEl.src = candidates[i++];
+    };
+    imgEl.onerror();
+  }
+
+  /* Full listing results are also cached in localStorage (not just in
+     memory) for an hour, so a page reload — or a second visitor on the
+     same network/IP — doesn't re-spend GitHub's 60-requests/hour
+     unauthenticated rate limit on folders we already looked up. */
+  var PHOTO_LIST_CACHE_KEY = "sancristobal_photo_list_cache_v1";
+  var PHOTO_LIST_TTL_MS = 60 * 60 * 1000;
+
+  function loadPhotoListCache(){
+    try{ var raw = window.localStorage.getItem(PHOTO_LIST_CACHE_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  }
+  function savePhotoListCache(cache){
+    try{ window.localStorage.setItem(PHOTO_LIST_CACHE_KEY, JSON.stringify(cache)); }
+    catch(e){ /* localStorage unavailable — fail silently, same as passport storage */ }
+  }
+
   function fetchPlacePhotos(placeId, callback){
     if(photoCache[placeId]){ callback(photoCache[placeId]); return; }
+
+    var stored = loadPhotoListCache();
+    var entry = stored[placeId];
+    if(entry && (Date.now() - entry.t) < PHOTO_LIST_TTL_MS){
+      photoCache[placeId] = entry.urls;
+      callback(entry.urls);
+      return;
+    }
+
     var url = "https://api.github.com/repos/" + GITHUB_OWNER + "/" + GITHUB_REPO
       + "/contents/images/" + encodeURIComponent(placeId) + "?ref=" + GITHUB_BRANCH;
 
@@ -208,6 +261,9 @@
           .slice(0, MAX_PHOTOS_PER_PLACE)
           .map(function(f){ return jsdelivrUrl(f.path); });
         photoCache[placeId] = urls;
+        var cache = loadPhotoListCache();
+        cache[placeId] = { urls: urls, t: Date.now() };
+        savePhotoListCache(cache);
         callback(urls);
       })
       .catch(function(){ callback([]); });
@@ -540,37 +596,16 @@
     });
   }
 
-  /* Rotating thumbnail (mobile place list) — cycles through a place's
-     fetched photos every few seconds. Timers are tracked so a re-render
-     (search/filter/language/stamp change tears down and rebuilds every
-     row) always clears the old interval instead of leaking one pointed
-     at a detached <img>. */
-  var rowThumbTimers = {};
-
-  function clearRowThumbTimers(){
-    Object.keys(rowThumbTimers).forEach(function(id){ clearInterval(rowThumbTimers[id]); });
-    rowThumbTimers = {};
-  }
-
+  /* Place-list thumbnail (mobile) — a single static image, not a rotation:
+     tries images/<place-id>/default.<ext> directly (see
+     defaultThumbCandidates() above) with no listing API call involved at
+     all, so it starts loading the instant the row renders and can't be
+     affected by GitHub's rate limit. Places without a default.* file keep
+     showing the category-glyph fallback. */
   function rowThumbFallback(place){
     var color = CATS[place.cats[0]].color;
     return '<div class="row-thumb-fallback" style="background:linear-gradient(135deg,'+color+',#2b2015)">'
       + CATS[place.cats[0]].glyph + '</div>';
-  }
-
-  function startRowThumbRotation(place, imgEl, urls){
-    var idx = 0;
-    imgEl.src = urls[0];
-    imgEl.style.opacity = "1";
-    if(urls.length < 2) return;
-    rowThumbTimers[place.id] = setInterval(function(){
-      idx = (idx + 1) % urls.length;
-      imgEl.style.opacity = "0";
-      setTimeout(function(){
-        imgEl.src = urls[idx];
-        imgEl.style.opacity = "1";
-      }, 300);
-    }, 3000);
   }
 
   function renderPlaceList(){
@@ -581,8 +616,6 @@
       var matchesSearch = !term || p.name.toLowerCase().indexOf(term) !== -1;
       return matchesFilter && matchesSearch;
     });
-
-    clearRowThumbTimers();
 
     if(items.length === 0){
       list.innerHTML = '<p class="empty-note">'+t("emptySearch")+'</p>';
@@ -599,7 +632,7 @@
         + '<span class="swatch" style="background:'+CATS[place.cats[0]].color+'"></span>'
         + '<span class="row-thumb" style="border-color:'+CATS[place.cats[0]].color+'">'
         +   rowThumbFallback(place)
-        +   '<img alt="" loading="lazy">'
+        +   '<img alt="">'
         + '</span>'
         + '<span class="info">'
         +   '<strong>'+escapeHTML(place.name)+'</strong>'
@@ -611,12 +644,11 @@
       row.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
       list.appendChild(row);
 
-      var thumbImg = row.querySelector(".row-thumb img");
-      fetchPlacePhotos(place.id, function(urls){
-        if(urls.length === 0) return; // fallback glyph stays showing
-        row.querySelector(".row-thumb").classList.add("has-photo");
-        startRowThumbRotation(place, thumbImg, urls);
-      });
+      var thumbWrap = row.querySelector(".row-thumb");
+      var thumbImg = thumbWrap.querySelector("img");
+      loadFirstWorkingImage(thumbImg, defaultThumbCandidates(place.id), function(){
+        thumbWrap.classList.add("has-photo");
+      }, null); // onFail: no default.* found — fallback glyph just stays showing
     });
   }
 
@@ -690,8 +722,10 @@
 
     /* ask GitHub what's actually in images/<place-id>/ and render
        whatever real photos it finds — any filename works */
+    var gallerySettled = false;
     fetchPlacePhotos(place.id, function(urls){
       if(activePlaceId !== place.id) return; // modal moved on before this resolved
+      gallerySettled = true;
       var wrap = document.getElementById("galleryWrap");
       if(!wrap) return;
       if(urls.length === 0){
@@ -709,6 +743,25 @@
         });
       });
     });
+
+    /* Meanwhile, try showing images/<place-id>/default.<ext> immediately
+       (no API call, see defaultThumbCandidates()) so the modal doesn't
+       just sit on the placeholder for as long as the full listing above
+       takes to round-trip. Gets clobbered by the real gallery once that
+       resolves — gallerySettled guards against the reverse race, where
+       the listing (e.g. served from the localStorage cache) resolves
+       first and this stale preview would otherwise overwrite it. */
+    var previewImg = new Image();
+    loadFirstWorkingImage(previewImg, defaultThumbCandidates(place.id), function(previewUrl){
+      if(gallerySettled || activePlaceId !== place.id) return;
+      var wrap = document.getElementById("galleryWrap");
+      if(!wrap) return;
+      wrap.innerHTML = '<button type="button" class="frame photo-frame" data-idx="0" '
+        + 'style="background-image:url(\''+previewUrl+'\')" aria-label="View photo 1 larger"></button>';
+      wrap.querySelector(".photo-frame").addEventListener("click", function(){
+        openLightbox([previewUrl], 0);
+      });
+    }, null);
 
     lastFocused = document.activeElement;
     backdrop.classList.add("open");

@@ -301,4 +301,5 @@
       opacity:0; transition: opacity 0.3s ease;
     }
     .row-thumb.has-photo .row-thumb-fallback{ display:none; }
+    .row-thumb.has-photo img{ opacity:1; }
   }

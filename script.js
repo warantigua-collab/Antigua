@@ -1107,6 +1107,34 @@
   });
   document.getElementById("fontSizeToggle").addEventListener("click", cycleFontSize);
 
+  /* Story groups (village-story-group) hold 2+ .village-story cards,
+     one visible at a time via the `hidden` attribute, advanced by the
+     group's own arrow button and looping back to the first card after
+     the last — keeps the village-story reading from feeling like one
+     long uninterrupted scroll. Generic over however many cards a group
+     holds, no group-specific wiring needed. */
+  function initStoryGroups(){
+    document.querySelectorAll(".village-story-group").forEach(function(group){
+      var cards = group.querySelectorAll(".village-story");
+      var indicator = group.querySelector(".story-nav-indicator");
+      var current = 0;
+      function show(i){
+        cards.forEach(function(card, ci){ card.hidden = ci !== i; });
+        if(indicator) indicator.textContent = (i + 1) + " / " + cards.length;
+      }
+      show(current);
+      var arrow = group.querySelector(".story-nav-arrow");
+      if(arrow && cards.length > 1){
+        arrow.addEventListener("click", function(){
+          current = (current + 1) % cards.length;
+          show(current);
+        });
+      } else if(arrow){
+        arrow.style.display = "none";
+      }
+    });
+  }
+
   function init(){
     initLeafletMap();
     document.getElementById("newsSubmitLink").href =
@@ -1119,6 +1147,7 @@
     renderPassport();
     renderNews();
     applyFontSize();
+    initStoryGroups();
   }
 
   init();

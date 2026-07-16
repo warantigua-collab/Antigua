@@ -120,17 +120,11 @@
     transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease); overflow: hidden;
   }
   @media (min-width: 760px){ .village-story{ margin: 32px auto; } }
-  /* woven-ribbon trim on the cultural-heritage cards — echoes traje típico
-     colors as a decorative accent, kept off the map-anchored card below so
-     it doesn't compete with that one's pirate ink/brick stripe border. */
-  .village-story:not(.village-story--map)::before{
+  /* woven-ribbon trim — echoes traje típico colors as a decorative accent
+     on every story card. */
+  .village-story::before{
     content: ""; position: absolute; top:0; left:0; right:0; height: 10px; background: var(--ribbon);
     box-shadow: inset 0 -2px 0 rgba(0,0,0,0.15);
-  }
-  .village-story--map{
-    border-radius: var(--r-m);
-    border: 9px solid transparent;
-    border-image: repeating-linear-gradient(45deg, var(--ink-soft), var(--ink-soft) 6px, var(--brick) 6px, var(--brick) 12px) 11;
   }
   .village-story .story-glyph{ display:block; text-align:center; font-size: 1.7rem; margin-bottom: 6px; }
   .village-story h2{
@@ -138,6 +132,29 @@
     font-size: clamp(1.4rem, 2.8vw, 1.85rem); margin: 0 0 14px; color: var(--ink); text-align:center;
   }
   .village-story p{ font-size: 1.08rem; line-height: 1.8; color: var(--ink); margin: 0; }
+
+  /* ---------- story groups — pairs of village-story cards that share
+     one slot, one card visible at a time (script.js cycles the `hidden`
+     attribute), so the four stories read as two focused containers
+     instead of four scattered ones. The group is a plain positioning
+     wrapper; the visible .village-story card inside supplies the actual
+     parchment/ribbon look, so the indigenous theme carries over as-is. */
+  .village-story-group{ position: relative; grid-column: 1 / -1; max-width: 860px; margin: 32px 20px; }
+  @media (min-width: 760px){ .village-story-group{ margin: 32px auto; } }
+  .village-story-group .village-story{ margin: 0; }
+  .story-nav-arrow{
+    position: absolute; top: 16px; right: 16px; z-index: 5;
+    width: 38px; height: 38px; border-radius: 50%; border: none;
+    background: var(--tex-3); color: #fff; font-size: 1.05rem; line-height:1;
+    display:flex; align-items:center; justify-content:center; box-shadow: var(--shadow-1);
+  }
+  .story-nav-arrow:hover{ background: var(--tex-5); transform: scale(1.08); }
+  .story-nav-arrow:active{ transform: scale(0.92); }
+  .story-nav-indicator{
+    position: absolute; top: 58px; right: 16px; z-index: 5; text-align:center;
+    font-size: 0.68rem; color: var(--ink-soft); background: rgba(255,255,255,0.6);
+    padding: 2px 8px; border-radius: 999px;
+  }
 
   .controls{
     display:flex; flex-wrap:wrap; gap: 16px; align-items:center; justify-content: space-between;
@@ -245,7 +262,6 @@
   @media (max-width: 900px){
     .main-view-toggle{ display:none; }
     .main-grid{ grid-template-columns: 1fr; }
-    .sidebar{ order: -1; }
   }
 
   .map-frame{

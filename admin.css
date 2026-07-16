@@ -1,0 +1,78 @@
+/* Admin utility page — reuses style.css's CSS variables (colors, fonts,
+   radii, shadows) for a consistent feel, but is deliberately plainer
+   than the public site: this is a working tool, not the treasure map. */
+
+.admin-body{
+  background: var(--teal-deep); min-height: 100vh; padding: 24px 16px 60px;
+}
+.admin-wrap{ max-width: 760px; margin: 0 auto; display:flex; flex-direction:column; gap: 20px; }
+
+.admin-header h1{
+  font-family: 'Pirata One', 'IM Fell English', serif; color: var(--parchment); font-size: 2rem; margin: 0 0 6px;
+}
+.admin-header p{ color: var(--parchment); opacity:0.85; margin: 0 0 8px; font-size: 0.95rem; }
+.admin-warning{
+  font-family: 'Space Mono', monospace; font-size: 0.78rem !important; opacity:1 !important;
+  color: var(--gold-bright) !important; background: rgba(0,0,0,0.25); padding: 10px 14px; border-radius: var(--r-s);
+  border: 1px solid rgba(224,187,61,0.4);
+}
+
+.admin-card{
+  background: var(--parchment); border-radius: var(--r-m); box-shadow: var(--shadow-2); padding: 22px 24px;
+}
+.admin-card h2{
+  font-family: 'Pirata One', 'IM Fell English', serif; font-weight:400; color: var(--ink); margin: 0 0 12px; font-size: 1.3rem;
+}
+.admin-hint{ font-size: 0.88rem; color: var(--ink-soft); margin: 0 0 12px; line-height:1.5; }
+
+.admin-details{ margin-bottom: 14px; font-size: 0.88rem; color: var(--ink); }
+.admin-details summary{ cursor:pointer; color: var(--brick); font-weight:700; }
+.admin-details ol{ margin: 10px 0 0; padding-left: 20px; line-height:1.6; }
+.admin-details code{ background: var(--parchment-dark); padding: 1px 5px; border-radius: 4px; font-family:'Space Mono',monospace; font-size:0.85em; }
+
+.admin-token-status{
+  font-family: 'Space Mono', monospace; font-size: 0.82rem; color: var(--ink-soft); margin-bottom: 12px;
+}
+.admin-token-status.admin-token-ok{ color: var(--forest); font-weight:700; }
+.admin-token-row{ display:flex; flex-wrap:wrap; gap: 8px; align-items:center; }
+.admin-token-row input{
+  flex: 1 1 240px; padding: 10px 14px; border-radius: 999px; border: 2px solid var(--gold);
+  background: #fff; color: var(--ink); font-family:'Space Mono',monospace; font-size: 0.85rem;
+}
+
+.admin-btn, .admin-btn-ghost{
+  font-family: 'Space Mono', monospace; font-size: 0.82rem; padding: 9px 16px; border-radius: 999px;
+  cursor:pointer; letter-spacing:0.3px;
+}
+.admin-btn{ background: var(--teal); color: var(--parchment); border:none; box-shadow: var(--shadow-1); }
+.admin-btn:hover{ background: var(--teal-deep); }
+.admin-btn-ghost{ background: transparent; color: var(--ink-soft); border: 1.5px solid var(--ink-soft); }
+.admin-btn-ghost:hover{ background: var(--ink-soft); color: var(--parchment); }
+.admin-btn-danger{ background: var(--brick); color: var(--parchment); border:none; box-shadow: var(--shadow-1); }
+.admin-btn-danger:hover{ filter: brightness(0.9); }
+.admin-btn:disabled, .admin-btn-ghost:disabled, .admin-btn-danger:disabled{ opacity:0.5; cursor:not-allowed; }
+
+.admin-list{ display:flex; flex-direction:column; gap: 14px; margin-top: 14px; }
+.admin-empty, .admin-error, .admin-loading{
+  font-family:'Space Mono', monospace; font-size: 0.85rem; color: var(--ink-soft); padding: 14px 4px;
+}
+.admin-error{ color: var(--brick); font-weight:700; }
+
+.admin-entry{
+  background: var(--parchment-dark); border-radius: var(--r-s); padding: 14px 16px;
+  border-left: 5px solid var(--brick); display:flex; flex-direction:column; gap:8px;
+}
+.admin-entry-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; }
+.admin-entry-title{ font-family:'Pirata One','IM Fell English',serif; font-size:1.1rem; color:var(--ink); margin:0; }
+.admin-entry-date{ font-family:'Space Mono',monospace; font-size:0.72rem; color: var(--ink-soft); white-space:nowrap; }
+.admin-entry-body{ font-size:0.92rem; line-height:1.55; color: var(--ink); white-space:pre-wrap; }
+.admin-entry-img{ max-width: 220px; width:100%; border-radius: var(--r-s); border: 2px solid var(--ink-soft); display:block; }
+.admin-entry-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.admin-edit-form{ display:flex; flex-direction:column; gap:8px; }
+.admin-edit-form input, .admin-edit-form textarea{
+  width:100%; padding: 8px 12px; border-radius: 8px; border: 2px solid var(--gold);
+  background:#fff; color: var(--ink); font-family:'IM Fell English',serif; font-size: 0.92rem;
+}
+.admin-edit-form textarea{ min-height: 100px; resize: vertical; font-family: inherit; }
+.admin-edit-form label{ font-family:'Space Mono',monospace; font-size:0.7rem; color: var(--ink-soft); text-transform:uppercase; letter-spacing:0.5px; }

@@ -31,6 +31,8 @@
       tabPassport: "Passport",
       tabNews: "News",
       newsEmpty: "No news right now — check back here if there's ever a road closure, earthquake, or other event affecting the village.",
+      newsSubmitNote: "See something worth sharing — a road closure, damage from an earthquake, anything else? Report it below. Reports are reviewed before they're posted.",
+      newsSubmitBtn: "📣 Report an event",
       resetPassport: "Reset passport",
       resetConfirm: "Reset your passport? All stamps saved on this device will be deleted.",
       footer: "All names and positions come from the screenshots you sent. Send me photos, videos, reviews, or position corrections for any place and I'll update the map.",
@@ -81,6 +83,8 @@
       tabPassport: "Pasaporte",
       tabNews: "Noticias",
       newsEmpty: "No hay noticias por el momento — vuelve a consultar aquí si alguna vez hay un cierre de carretera, un terremoto u otro evento que afecte al pueblo.",
+      newsSubmitNote: "¿Viste algo que valga la pena compartir — un cierre de carretera, daños de un terremoto, otra cosa? Repórtalo abajo. Los reportes se revisan antes de publicarse.",
+      newsSubmitBtn: "📣 Reportar un evento",
       resetPassport: "Reiniciar pasaporte",
       resetConfirm: "¿Reiniciar tu pasaporte? Se borrarán todos los sellos guardados en este dispositivo.",
       footer: "Todos los nombres y posiciones vienen de las capturas que enviaste. Envíame fotos, videos, reseñas o correcciones de posición para cada lugar y actualizo el mapa.",
@@ -179,19 +183,15 @@
 
   /* ---------------------------------------------------------
      NEWS — community/visitor notices (road closures, earthquakes,
-     other events affecting the village). Empty by default; add
-     entries by hand the same way PLACES is edited, newest first
-     doesn't matter since renderNews() sorts by date. `image` is
-     optional — an exact filename under images/news/, following the
-     same jsDelivr-hosted convention as place photos (works once
-     deployed to GitHub Pages; shows nothing locally until then).
-     Example shape:
-     { id:"2026-08-earthquake", date:"2026-08-14",
-       title:{ en:"...", es:"..." }, body:{ en:"...", es:"..." },
-       image: "images/news/2026-08-earthquake.jpg" }
+     other events affecting the village) now live in news.json at the
+     repo root, not here. Community members submit reports as GitHub
+     Issues (see .github/ISSUE_TEMPLATE/news-report.yml); the site
+     owner reviews and publishes them via admin.html, which commits
+     the approved entry into news.json. renderNews() fetches that file
+     at runtime — see below. Unlike the rest of the site, each entry
+     is a single language (whichever the submitter wrote in), shown
+     as-is regardless of the EN/ES toggle.
   --------------------------------------------------------- */
-  var NEWS = [
-  ];
 
   /* ---------------------------------------------------------
      PHOTOS — reads whatever image files actually exist in each
@@ -754,19 +754,31 @@
     document.getElementById("passportSummary").textContent = t("passportSummary")(count, total);
   }
 
-  /* News body is trusted, owner-authored content (edited directly in
-     this file, same as the village-story paragraphs), so it's allowed
-     the same <br><br> multi-paragraph markup via innerHTML rather than
-     being escaped like place descriptions — titles stay escaped since
-     they're short and don't need markup. */
-  function renderNews(){
+  /* News entries are now community-submitted (see the comment above
+     NEWS's old spot), reviewed and published by the site owner via
+     admin.html, but the raw text still ultimately came from a stranger
+     on the internet — unlike the village-story paragraphs, this is
+     NOT trusted content. Both title and body are escaped; body's line
+     breaks are preserved by converting literal newlines to <br> only
+     *after* escaping, so a submission can't smuggle in markup. */
+  var newsCache = null; // fetched once; renderNews() re-renders the cache on language switch without re-fetching
+
+  function newsBodyHtml(raw){
+    return escapeHTML(raw).replace(/\n/g, "<br>");
+  }
+
+  function newsImageSrc(image){
+    return image.indexOf("http") === 0 ? image : jsdelivrUrl(image);
+  }
+
+  function renderNewsList(items){
     var list = document.getElementById("newsList");
     list.innerHTML = "";
-    if(NEWS.length === 0){
+    if(items.length === 0){
       list.innerHTML = '<p class="empty-note">' + escapeHTML(t("newsEmpty")) + '</p>';
       return;
     }
-    var sorted = NEWS.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    var sorted = items.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
     sorted.forEach(function(item){
       var dateObj = new Date(item.date + "T00:00:00");
       var dateStr = isNaN(dateObj) ? item.date
@@ -774,19 +786,30 @@
       var card = document.createElement("article");
       card.className = "news-card";
       card.innerHTML = '<div class="news-date mono">📰 ' + escapeHTML(dateStr) + '</div>'
-        + '<h3 class="news-title">' + escapeHTML(item.title[LANG]) + '</h3>'
-        + '<div class="news-body">' + item.body[LANG] + '</div>';
+        + '<h3 class="news-title">' + escapeHTML(item.title) + '</h3>'
+        + '<div class="news-body">' + newsBodyHtml(item.body) + '</div>';
       if(item.image){
         var img = document.createElement("img");
         img.className = "news-image";
-        img.src = jsdelivrUrl(item.image);
-        img.alt = item.title[LANG];
+        img.src = newsImageSrc(item.image);
+        img.alt = item.title;
         img.loading = "lazy";
         img.onerror = function(){ img.remove(); };
         card.appendChild(img);
       }
       list.appendChild(card);
     });
+  }
+
+  function renderNews(){
+    if(newsCache){ renderNewsList(newsCache); return; }
+    fetch("news.json")
+      .then(function(res){ return res.ok ? res.json() : []; })
+      .catch(function(){ return []; })
+      .then(function(data){
+        newsCache = Array.isArray(data) ? data : [];
+        renderNewsList(newsCache);
+      });
   }
 
   var backdrop = document.getElementById("modalBackdrop");
@@ -1043,6 +1066,8 @@
     tabList.textContent = t("tabPlaces");
     tabPassport.textContent = t("tabPassport");
     tabNews.textContent = t("tabNews");
+    document.getElementById("txt-news-submit-note").textContent = t("newsSubmitNote");
+    document.getElementById("newsSubmitLink").textContent = t("newsSubmitBtn");
     document.getElementById("mainViewToggle").setAttribute("aria-label", t("mainViewAria"));
     tabViewPlaces.textContent = t("viewPlacesTab");
     tabViewMap.textContent = t("viewMapTab");
@@ -1084,6 +1109,8 @@
 
   function init(){
     initLeafletMap();
+    document.getElementById("newsSubmitLink").href =
+      "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/issues/new?template=news-report.yml";
     applyStaticStrings();
     renderLegend();
     renderFilterChips();

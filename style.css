@@ -334,6 +334,19 @@
      earthquakes, other events). Left accent bar in brick (the site's
      existing "important" color, already used for stamped/alert states)
      marks these as notices rather than ordinary place-list content. ---------- */
+  .news-submit-cta{
+    margin: 14px 14px 0; padding: 14px 16px; border-radius: var(--r-s);
+    background: rgba(31,78,74,0.08); border: 1px dashed var(--ink-soft); text-align:center;
+  }
+  .news-submit-cta p{ font-size: 0.86rem; line-height:1.5; color: var(--ink-soft); margin: 0 0 10px; }
+  .news-submit-btn{
+    display:inline-flex; align-items:center; gap:8px; background: var(--teal); color: var(--parchment);
+    border: none; padding: 10px 18px; border-radius: 999px; font-family: 'Space Mono', monospace;
+    font-size: 0.85rem; letter-spacing: 0.5px; box-shadow: var(--shadow-1); text-decoration:none;
+  }
+  .news-submit-btn:hover{ background: var(--teal-deep); box-shadow: var(--shadow-2); transform: translateY(-1px); }
+  .news-submit-btn:active{ transform: translateY(0) scale(0.97); }
+
   #newsList{ padding: 14px; display:flex; flex-direction:column; gap: 14px; }
   .news-card{
     padding: 16px 18px; border-radius: var(--r-s); background: var(--parchment-dark);

@@ -9,7 +9,6 @@
   var STRINGS = {
     en: {
       eyebrow: "Sacatepéquez · Guatemala",
-      subtitle: "This map is hand-traced from the real layout of the village — every curve, every bend in the road, and every pin follows your original reference photos, drawn in a treasure-map style. Explore it and stamp your digital passport as you visit each place — no account needed.",
       villageIntro: "Founded around 1535, San Cristóbal El Alto is one of the oldest communities in the Antigua Valley and a place where nearly five centuries of history, culture, and tradition continue to thrive. Perched in the mountains above Antigua Guatemala, this remarkable village offers visitors far more than breathtaking scenery — it offers a living connection to the origins of Guatemala's colonial and indigenous heritage.",
       viewsTitle: "Views That Inspire",
       viewsBody: "From its privileged location high above the valley, San Cristóbal El Alto commands some of the most spectacular views in the country. The iconic Volcán de Agua rises majestically above Antigua, while Volcán Acatenango and the ever-active Volcán de Fuego create a dramatic backdrop that has captivated travelers, photographers, artists, and adventurers from around the world. On clear mornings, the landscape unfolds like a painting, revealing why the Antigua region is considered one of the most beautiful destinations in Latin America.",
@@ -56,7 +55,6 @@
     },
     es: {
       eyebrow: "Sacatepéquez · Guatemala",
-      subtitle: "Este mapa está trazado a mano a partir del mapa real del pueblo — cada curva, cada quiebre del camino y la posición de cada sitio siguen tu captura original, con el estilo de un mapa del tesoro. Explóralo y sella tu pasaporte digital conforme visites cada lugar — sin necesidad de crear cuenta.",
       villageIntro: "Fundado alrededor de 1535, San Cristóbal El Alto es una de las comunidades más antiguas del Valle de Antigua, un lugar donde casi cinco siglos de historia, cultura y tradición siguen vivos. Encaramado en las montañas sobre Antigua Guatemala, este extraordinario pueblo ofrece a sus visitantes mucho más que paisajes impresionantes: ofrece una conexión viva con los orígenes del patrimonio colonial e indígena de Guatemala.",
       viewsTitle: "Vistas que Inspiran",
       viewsBody: "Desde su privilegiada ubicación en lo alto del valle, San Cristóbal El Alto ofrece algunas de las vistas más espectaculares del país. El icónico Volcán de Agua se alza majestuoso sobre Antigua, mientras que el Volcán Acatenango y el siempre activo Volcán de Fuego forman un telón de fondo imponente que ha cautivado a viajeros, fotógrafos, artistas y aventureros de todo el mundo. En las mañanas despejadas, el paisaje se despliega como una pintura, revelando por qué la región de Antigua se considera uno de los destinos más hermosos de América Latina.",
@@ -937,7 +935,6 @@
   function applyStaticStrings(){
     document.documentElement.lang = LANG;
     document.getElementById("txt-eyebrow").textContent = t("eyebrow");
-    document.getElementById("txt-subtitle").textContent = t("subtitle");
     document.getElementById("txt-village-intro").textContent = t("villageIntro");
     document.getElementById("txt-views-title").textContent = t("viewsTitle");
     document.getElementById("txt-views-body").textContent = t("viewsBody");

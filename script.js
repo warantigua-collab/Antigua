@@ -50,7 +50,10 @@
       stampedSuffix: " (stamped)",
       stampedCheck: "✓ Stamped in your passport",
       emptySearch: "No place matches your search. Try another term or clear the filter.",
-      passportSummary: function(count,total){ return count + " of " + total + " places discovered"; }
+      passportSummary: function(count,total){ return count + " of " + total + " places discovered"; },
+      fontSizeAria: function(step){
+        return step === 0 ? "Increase text size" : (step === 1 ? "Increase text size further" : "Reset text size to default");
+      }
     },
     es: {
       eyebrow: "Sacatepéquez · Guatemala",
@@ -95,7 +98,10 @@
       stampedSuffix: " (sellado)",
       stampedCheck: "✓ Sellado en tu pasaporte",
       emptySearch: "Ningún lugar coincide con tu búsqueda. Prueba otro término o quita el filtro.",
-      passportSummary: function(count,total){ return count + " de " + total + " lugares descubiertos"; }
+      passportSummary: function(count,total){ return count + " de " + total + " lugares descubiertos"; },
+      fontSizeAria: function(step){
+        return step === 0 ? "Aumentar tamaño del texto" : (step === 1 ? "Aumentar aún más el tamaño del texto" : "Restablecer el tamaño del texto");
+      }
     }
   };
   function t(key){ return STRINGS[LANG][key]; }
@@ -310,8 +316,11 @@
   }
 
   var STORAGE_KEY = "sancristobal_passport_v3";
+  var FONT_SIZE_KEY = "sancristobal_fontsize_v1";
+  var FONT_SIZE_STEPS = [1, 1.15, 1.3]; // multiplier applied on top of the responsive baseline via --fs-mult
 
   var stamped = loadStamped();
+  var fontSizeStep = loadFontSizeStep();
   var activeFilter = "all";
   var searchTerm = "";
   var activePlaceId = null;
@@ -326,6 +335,31 @@
     try{ window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stamped)); }
     catch(e){ /* localStorage unavailable (private mode etc.) — fail silently */ }
   }
+
+  function loadFontSizeStep(){
+    try{
+      var n = parseInt(window.localStorage.getItem(FONT_SIZE_KEY), 10);
+      return (n >= 0 && n < FONT_SIZE_STEPS.length) ? n : 0;
+    } catch(e){ return 0; }
+  }
+  function saveFontSizeStep(){
+    try{ window.localStorage.setItem(FONT_SIZE_KEY, String(fontSizeStep)); }
+    catch(e){ /* localStorage unavailable — fail silently, same as passport storage */ }
+  }
+  function applyFontSize(){
+    document.documentElement.style.setProperty("--fs-mult", FONT_SIZE_STEPS[fontSizeStep]);
+    var btn = document.getElementById("fontSizeToggle");
+    if(!btn) return;
+    btn.textContent = fontSizeStep === 0 ? "A+" : (fontSizeStep === 1 ? "A++" : "A↺");
+    btn.setAttribute("aria-label", t("fontSizeAria")(fontSizeStep));
+    btn.title = t("fontSizeAria")(fontSizeStep);
+  }
+  function cycleFontSize(){
+    fontSizeStep = (fontSizeStep + 1) % FONT_SIZE_STEPS.length;
+    applyFontSize();
+    saveFontSizeStep();
+  }
+
   function escapeHTML(str){ var div = document.createElement("div"); div.textContent = str; return div.innerHTML; }
 
   /* ---------------------------------------------------------
@@ -978,12 +1012,14 @@
     renderPins();
     renderPlaceList();
     renderPassport();
+    applyFontSize();
     if(activePlaceId) openModal(activePlaceId);
   }
 
   document.querySelectorAll("#langToggle button").forEach(function(btn){
     btn.addEventListener("click", function(){ setLang(btn.getAttribute("data-lang")); });
   });
+  document.getElementById("fontSizeToggle").addEventListener("click", cycleFontSize);
 
   function init(){
     initLeafletMap();
@@ -993,6 +1029,7 @@
     renderPins();
     renderPlaceList();
     renderPassport();
+    applyFontSize();
   }
 
   init();

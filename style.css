@@ -39,6 +39,29 @@
   header.masthead .eyebrow{ font-family: 'Space Mono', monospace; letter-spacing: 3px; text-transform: uppercase; font-size: 0.7rem; color: var(--gold-bright); margin: 0 0 6px; }
   header.masthead h1{ font-size: clamp(2.1rem, 6vw, 3.4rem); margin: 0; text-shadow: 0 2px 0 rgba(0,0,0,0.4); }
   header.masthead p.sub{ margin: 10px auto 0; max-width: 680px; font-size: 1rem; opacity: 0.85; line-height: 1.5; }
+  header.masthead p.village-intro{
+    margin: 16px auto 0; padding-top: 14px; max-width: 640px; font-size: 0.92rem; line-height: 1.65;
+    color: var(--gold-bright); font-style: italic; border-top: 1px solid rgba(201,162,39,0.35);
+  }
+
+  /* ---------- village story sections — the map/places tool is the site's
+     core function, so these are dropped between/around it in short,
+     headed chunks rather than one long read up front ---------- */
+  .village-story{
+    max-width: 720px; margin: 28px 20px; padding: 30px 28px;
+    background: var(--parchment); border-radius: 8px; box-shadow: 0 14px 34px var(--paper-shadow);
+  }
+  @media (min-width: 760px){ .village-story{ margin: 28px auto; } }
+  .village-story--map{
+    border: 9px solid transparent;
+    border-image: repeating-linear-gradient(45deg, var(--ink-soft), var(--ink-soft) 6px, var(--brick) 6px, var(--brick) 12px) 11;
+  }
+  .village-story .story-glyph{ display:block; text-align:center; font-size: 1.7rem; margin-bottom: 6px; }
+  .village-story h2{
+    font-family: 'Pirata One', 'IM Fell English', serif; font-weight:400; letter-spacing:0.5px;
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem); margin: 0 0 12px; color: var(--ink); text-align:center;
+  }
+  .village-story p{ font-size: 0.97rem; line-height: 1.75; color: var(--ink); margin: 0; }
 
   .controls{
     display:flex; flex-wrap:wrap; gap: 12px; align-items:center; justify-content: space-between;
@@ -350,4 +373,5 @@
     .sidebar{ max-height:none; }
     .leaflet-control-zoom a{ width: 30px !important; height:30px !important; line-height:30px !important; }
     .reset-view-btn{ width: 30px; height:30px; }
+    .village-story{ padding: 22px 20px; }
   }

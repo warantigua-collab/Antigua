@@ -10,6 +10,15 @@
     en: {
       eyebrow: "Sacatepéquez · Guatemala",
       subtitle: "This map is hand-traced from the real layout of the village — every curve, every bend in the road, and every pin follows your original reference photos, drawn in a treasure-map style. Explore it and stamp your digital passport as you visit each place — no account needed.",
+      villageIntro: "Founded around 1535, San Cristóbal El Alto is one of the oldest communities in the Antigua Valley and a place where nearly five centuries of history, culture, and tradition continue to thrive. Perched in the mountains above Antigua Guatemala, this remarkable village offers visitors far more than breathtaking scenery — it offers a living connection to the origins of Guatemala's colonial and indigenous heritage.",
+      viewsTitle: "Views That Inspire",
+      viewsBody: "From its privileged location high above the valley, San Cristóbal El Alto commands some of the most spectacular views in the country. The iconic Volcán de Agua rises majestically above Antigua, while Volcán Acatenango and the ever-active Volcán de Fuego create a dramatic backdrop that has captivated travelers, photographers, artists, and adventurers from around the world. On clear mornings, the landscape unfolds like a painting, revealing why the Antigua region is considered one of the most beautiful destinations in Latin America.",
+      originsTitle: "Faith, Fields & Foundations",
+      originsBody: "Named after Saint Christopher, the patron saint of travelers, San Cristóbal El Alto emerged during the early years of Spanish settlement in the region. For generations, the village played an important role in supporting the nearby colonial capital through agriculture, craftsmanship, and trade. The fertile volcanic soil that surrounds the community has sustained local families for centuries, while traditions passed from one generation to the next continue to shape everyday life.<br><br>At the heart of the village stands its historic church, a symbol of faith, resilience, and community identity. Like many churches throughout the Antigua Valley, it has witnessed centuries of change — from colonial rule and devastating earthquakes to the growth of modern Guatemala. The church remains a gathering place where history and tradition are woven into the fabric of daily life.",
+      cultureTitle: "A Living Heritage",
+      cultureBody: "What makes San Cristóbal El Alto truly special is the harmony between its rich past and vibrant present. Visitors can still experience authentic Guatemalan culture through local artisans, traditional celebrations, community projects, and the warm hospitality of the people who call this village home. Here, the story of Guatemala is not preserved behind museum walls — it is lived every day.",
+      legacyTitle: "Recognized, Yet Rooted",
+      legacyBody: "In recent years, San Cristóbal El Alto has gained international recognition as one of the most inspiring destinations overlooking Antigua. Its stunning landscapes and strong sense of community have attracted visitors from across the globe, including acclaimed actor Will Smith, whose visit brought worldwide attention to the village and its people.<br><br>Yet despite growing recognition, San Cristóbal El Alto remains true to its roots. It is a place where history is measured not only in centuries but in traditions preserved, families nurtured, and stories shared. For those who venture beyond Antigua's city streets, the village offers something increasingly rare in today's world: an authentic connection to Guatemala's heritage, its natural beauty, and its enduring spirit.<br><br>San Cristóbal El Alto is more than a viewpoint above Antigua — it is one of the cultural treasures of the Antigua Valley, a community whose history spans nearly 500 years and whose beauty continues to inspire everyone fortunate enough to visit.",
       searchPlaceholder: "Search for a viewpoint, restaurant, trail…",
       searchAria: "Search places on the map",
       filtersAria: "Filter by category",
@@ -48,6 +57,15 @@
     es: {
       eyebrow: "Sacatepéquez · Guatemala",
       subtitle: "Este mapa está trazado a mano a partir del mapa real del pueblo — cada curva, cada quiebre del camino y la posición de cada sitio siguen tu captura original, con el estilo de un mapa del tesoro. Explóralo y sella tu pasaporte digital conforme visites cada lugar — sin necesidad de crear cuenta.",
+      villageIntro: "Fundado alrededor de 1535, San Cristóbal El Alto es una de las comunidades más antiguas del Valle de Antigua, un lugar donde casi cinco siglos de historia, cultura y tradición siguen vivos. Encaramado en las montañas sobre Antigua Guatemala, este extraordinario pueblo ofrece a sus visitantes mucho más que paisajes impresionantes: ofrece una conexión viva con los orígenes del patrimonio colonial e indígena de Guatemala.",
+      viewsTitle: "Vistas que Inspiran",
+      viewsBody: "Desde su privilegiada ubicación en lo alto del valle, San Cristóbal El Alto ofrece algunas de las vistas más espectaculares del país. El icónico Volcán de Agua se alza majestuoso sobre Antigua, mientras que el Volcán Acatenango y el siempre activo Volcán de Fuego forman un telón de fondo imponente que ha cautivado a viajeros, fotógrafos, artistas y aventureros de todo el mundo. En las mañanas despejadas, el paisaje se despliega como una pintura, revelando por qué la región de Antigua se considera uno de los destinos más hermosos de América Latina.",
+      originsTitle: "Fe, Campos y Fundamentos",
+      originsBody: "Nombrado en honor a San Cristóbal, el santo patrono de los viajeros, San Cristóbal El Alto surgió durante los primeros años del asentamiento español en la región. Durante generaciones, el pueblo desempeñó un papel importante en el sustento de la cercana capital colonial a través de la agricultura, la artesanía y el comercio. La fértil tierra volcánica que rodea a la comunidad ha sostenido a las familias locales durante siglos, mientras que las tradiciones transmitidas de generación en generación siguen dando forma a la vida cotidiana.<br><br>En el corazón del pueblo se alza su iglesia histórica, símbolo de fe, resiliencia e identidad comunitaria. Como muchas iglesias del Valle de Antigua, ha sido testigo de siglos de cambios: del dominio colonial y terremotos devastadores al crecimiento de la Guatemala moderna. La iglesia sigue siendo un punto de encuentro donde la historia y la tradición se entretejen en el día a día.",
+      cultureTitle: "Un Patrimonio Vivo",
+      cultureBody: "Lo que hace que San Cristóbal El Alto sea verdaderamente especial es la armonía entre su rico pasado y su presente vibrante. Los visitantes todavía pueden vivir la auténtica cultura guatemalteca a través de los artesanos locales, las celebraciones tradicionales, los proyectos comunitarios y la calidez de la gente que llama hogar a este pueblo. Aquí, la historia de Guatemala no se conserva detrás de las paredes de un museo: se vive cada día.",
+      legacyTitle: "Reconocida en el Mundo, Fiel a sus Raíces",
+      legacyBody: "En los últimos años, San Cristóbal El Alto ha ganado reconocimiento internacional como uno de los destinos más inspiradores con vista a Antigua. Sus impresionantes paisajes y su fuerte sentido de comunidad han atraído a visitantes de todo el mundo, incluido el aclamado actor Will Smith, cuya visita atrajo la atención mundial hacia el pueblo y su gente.<br><br>Sin embargo, a pesar de su creciente reconocimiento, San Cristóbal El Alto se mantiene fiel a sus raíces. Es un lugar donde la historia se mide no solo en siglos, sino en tradiciones preservadas, familias que crecen y relatos compartidos. Para quienes se aventuran más allá de las calles de Antigua, el pueblo ofrece algo cada vez más escaso en el mundo actual: una conexión auténtica con el patrimonio de Guatemala, su belleza natural y su espíritu perdurable.<br><br>San Cristóbal El Alto es mucho más que un mirador sobre Antigua: es uno de los tesoros culturales del Valle de Antigua, una comunidad cuya historia abarca casi 500 años y cuya belleza sigue inspirando a todo aquel que tiene la fortuna de visitarla.",
       searchPlaceholder: "Buscar un mirador, restaurante, sendero…",
       searchAria: "Buscar lugares en el mapa",
       filtersAria: "Filtrar por categoría",
@@ -920,6 +938,15 @@
     document.documentElement.lang = LANG;
     document.getElementById("txt-eyebrow").textContent = t("eyebrow");
     document.getElementById("txt-subtitle").textContent = t("subtitle");
+    document.getElementById("txt-village-intro").textContent = t("villageIntro");
+    document.getElementById("txt-views-title").textContent = t("viewsTitle");
+    document.getElementById("txt-views-body").textContent = t("viewsBody");
+    document.getElementById("txt-origins-title").textContent = t("originsTitle");
+    document.getElementById("txt-origins-body").innerHTML = t("originsBody");
+    document.getElementById("txt-culture-title").textContent = t("cultureTitle");
+    document.getElementById("txt-culture-body").textContent = t("cultureBody");
+    document.getElementById("txt-legacy-title").textContent = t("legacyTitle");
+    document.getElementById("txt-legacy-body").innerHTML = t("legacyBody");
     document.getElementById("searchInput").placeholder = t("searchPlaceholder");
     document.getElementById("searchInput").setAttribute("aria-label", t("searchAria"));
     document.getElementById("filterChips").setAttribute("aria-label", t("filtersAria"));

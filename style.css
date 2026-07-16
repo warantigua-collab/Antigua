@@ -241,7 +241,7 @@
   .reset-view-btn:hover{ background: var(--ink-soft); color: var(--parchment); }
 
   .pin{
-    background:none; border:none; padding:0; width: 28px; height: 36px;
+    background:none; border:none; padding:0; width: 28px; height: 36px; transform-origin: 50% 100%;
     filter: drop-shadow(0 3px 2px rgba(0,0,0,0.35)); transition: transform 0.15s ease; display:block;
   }
   .pin:hover, .pin:focus-visible{ transform: scale(1.28); }
@@ -458,4 +458,13 @@
     .leaflet-control-zoom a{ width: 30px !important; height:30px !important; line-height:30px !important; }
     .reset-view-btn{ width: 30px; height:30px; }
     .village-story{ padding: 22px 20px; }
+
+    /* Smaller pins on mobile — the map frame renders much smaller here,
+       so the same fixed-size pins (Leaflet keeps marker size constant
+       regardless of zoom) crowd tightly-clustered places into an
+       unreadable pile at the default zoomed-out view. Scaling from the
+       tip (transform-origin set above) shrinks the glyph without
+       touching iconAnchor's positioning math. */
+    .pin{ transform: scale(0.68); }
+    .pin:hover, .pin:focus-visible{ transform: scale(0.68) scale(1.28); }
   }

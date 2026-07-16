@@ -81,7 +81,9 @@
   .chip:hover{ transform: translateY(-1px); }
   .chip[aria-pressed="true"]{ background: var(--gold); color: var(--teal-deep); font-weight:700; }
   .lang-toggle{
-    display:flex; border: 1.5px solid var(--gold); border-radius: 999px; overflow:hidden; flex: 0 0 auto; margin: 0 auto;
+    display:flex; border: 1.5px solid var(--gold); border-radius: 999px; overflow:hidden;
+    position: fixed; top: 14px; right: 14px; z-index: 20;
+    background: var(--teal-deep); box-shadow: 0 4px 12px rgba(0,0,0,0.4);
   }
   .lang-toggle button{
     border:none; background: transparent; color: var(--parchment); padding: 7px 13px;
@@ -333,10 +335,6 @@
      regardless of how the phone is held. */
   @media (max-width: 640px), (max-height: 500px) and (orientation: landscape){
     header.masthead{ padding-top: 62px; }
-    .lang-toggle{
-      position: fixed; top: 14px; right: 14px; z-index: 20;
-      background: var(--teal-deep); box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    }
   }
 
   /* Place-row thumbnail — shown whenever the place list is presented as

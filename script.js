@@ -540,6 +540,39 @@
     });
   }
 
+  /* Rotating thumbnail (mobile place list) — cycles through a place's
+     fetched photos every few seconds. Timers are tracked so a re-render
+     (search/filter/language/stamp change tears down and rebuilds every
+     row) always clears the old interval instead of leaking one pointed
+     at a detached <img>. */
+  var rowThumbTimers = {};
+
+  function clearRowThumbTimers(){
+    Object.keys(rowThumbTimers).forEach(function(id){ clearInterval(rowThumbTimers[id]); });
+    rowThumbTimers = {};
+  }
+
+  function rowThumbFallback(place){
+    var color = CATS[place.cats[0]].color;
+    return '<div class="row-thumb-fallback" style="background:linear-gradient(135deg,'+color+',#2b2015)">'
+      + CATS[place.cats[0]].glyph + '</div>';
+  }
+
+  function startRowThumbRotation(place, imgEl, urls){
+    var idx = 0;
+    imgEl.src = urls[0];
+    imgEl.style.opacity = "1";
+    if(urls.length < 2) return;
+    rowThumbTimers[place.id] = setInterval(function(){
+      idx = (idx + 1) % urls.length;
+      imgEl.style.opacity = "0";
+      setTimeout(function(){
+        imgEl.src = urls[idx];
+        imgEl.style.opacity = "1";
+      }, 300);
+    }, 3000);
+  }
+
   function renderPlaceList(){
     var list = document.getElementById("placeList");
     var term = searchTerm.trim().toLowerCase();
@@ -548,6 +581,8 @@
       var matchesSearch = !term || p.name.toLowerCase().indexOf(term) !== -1;
       return matchesFilter && matchesSearch;
     });
+
+    clearRowThumbTimers();
 
     if(items.length === 0){
       list.innerHTML = '<p class="empty-note">'+t("emptySearch")+'</p>';
@@ -562,6 +597,10 @@
       var catLabels = place.cats.map(catLabel).join(" · ");
       row.innerHTML = ''
         + '<span class="swatch" style="background:'+CATS[place.cats[0]].color+'"></span>'
+        + '<span class="row-thumb" style="border-color:'+CATS[place.cats[0]].color+'">'
+        +   rowThumbFallback(place)
+        +   '<img alt="" loading="lazy">'
+        + '</span>'
         + '<span class="info">'
         +   '<strong>'+escapeHTML(place.name)+'</strong>'
         +   '<small>'+catLabels+'</small>'
@@ -571,6 +610,13 @@
       row.addEventListener("mouseenter", function(){ prefetchPlacePhotos(place.id); });
       row.addEventListener("focus", function(){ prefetchPlacePhotos(place.id); });
       list.appendChild(row);
+
+      var thumbImg = row.querySelector(".row-thumb img");
+      fetchPlacePhotos(place.id, function(urls){
+        if(urls.length === 0) return; // fallback glyph stays showing
+        row.querySelector(".row-thumb").classList.add("has-photo");
+        startRowThumbRotation(place, thumbImg, urls);
+      });
     });
   }
 

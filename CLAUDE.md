@@ -71,6 +71,10 @@ If the repo is forked or renamed, `GITHUB_OWNER` / `GITHUB_REPO` / `GITHUB_BRANC
 
 Language is a single module-level `LANG` var, not routed via URL. `setLang()` re-renders all translatable UI in place. When adding new UI text, add the key to **both** `STRINGS.en` and `STRINGS.es`, and if it's static markup in `index.html`, wire it up in `applyStaticStrings()`.
 
+### News tab
+
+A third sidebar tab (alongside Places/Passport) for community/visitor notices — road closures, earthquakes, other events. `NEWS` (near `PLACES`) is empty by default and, like everything else in this repo, is edited by hand rather than through any admin UI: add an object with `id`, `date` (`"YYYY-MM-DD"`, sorted newest-first by `renderNews()` via plain string comparison — the format matters), `title`/`body` (`{en, es}`), and an optional `image` (a path like `images/news/2026-08-earthquake.jpg`, hand-picked rather than discovered via the GitHub API the way place photos are, since a news item has at most one image and the author already knows its filename). `body` is inserted via `innerHTML` (not escaped like place `desc`) so multi-paragraph notices can use `<br><br>`, same convention as the village-story paragraphs — safe because news entries are owner-authored in this file, not user-submitted. Missing/broken images are removed from the DOM via the `<img>`'s `onerror` rather than showing a broken-image icon.
+
 ## Adding photos (see `images/README.md` for the full version)
 
 Drop image files into `images/<place-id>/` with any filename — no renaming, no code changes. Only `.jpg`/`.jpeg`/`.png`/`.webp`/`.gif` are picked up; convert HEIC first.

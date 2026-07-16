@@ -63,6 +63,7 @@
       <div class="sidebar-tabs" role="tablist">
         <button role="tab" id="tab-list" aria-selected="true" aria-controls="panel-list">Places</button>
         <button role="tab" id="tab-passport" aria-selected="false" aria-controls="panel-passport">Passport</button>
+        <button role="tab" id="tab-news" aria-selected="false" aria-controls="panel-news">News</button>
       </div>
 
       <div class="sidebar-panel" id="panel-list" role="tabpanel" aria-labelledby="tab-list">
@@ -75,6 +76,10 @@
           <span id="passportSummary" class="mono">0 of 0 places discovered</span>
           <button class="reset-btn" id="resetPassport" type="button">Reset passport</button>
         </div>
+      </div>
+
+      <div class="sidebar-panel" id="panel-news" role="tabpanel" aria-labelledby="tab-news" hidden>
+        <div id="newsList"></div>
       </div>
     </aside>
 

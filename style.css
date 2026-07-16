@@ -330,6 +330,26 @@
 
   .empty-note{ font-family:'Space Mono', monospace; font-size:0.9rem; color: var(--ink-soft); text-align:center; padding: 20px 10px; }
 
+  /* ---------- News tab — community/visitor notices (road closures,
+     earthquakes, other events). Left accent bar in brick (the site's
+     existing "important" color, already used for stamped/alert states)
+     marks these as notices rather than ordinary place-list content. ---------- */
+  #newsList{ padding: 14px; display:flex; flex-direction:column; gap: 14px; }
+  .news-card{
+    padding: 16px 18px; border-radius: var(--r-s); background: var(--parchment-dark);
+    border-left: 5px solid var(--brick); box-shadow: var(--shadow-1);
+  }
+  .news-date{ font-size: 0.78rem; color: var(--brick); letter-spacing: 0.5px; margin-bottom: 6px; font-weight:700; }
+  .news-title{
+    font-family: 'Pirata One', 'IM Fell English', serif; font-weight:400; letter-spacing:0.5px;
+    font-size: 1.2rem; margin: 0 0 8px; color: var(--ink);
+  }
+  .news-body{ font-size: 1rem; line-height: 1.6; color: var(--ink); }
+  .news-image{
+    display:block; width:100%; margin-top: 12px; border-radius: var(--r-s);
+    border: 2px solid var(--ink-soft); box-shadow: var(--shadow-1);
+  }
+
   .passport-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px; }
   .stamp-slot{
     aspect-ratio: 1; border-radius: 50%; border: 2px dashed var(--ink-soft); display:flex; align-items:center; justify-content:center;

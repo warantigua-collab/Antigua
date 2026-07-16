@@ -29,6 +29,8 @@
       viewMapTab: "🗺 Map",
       tabPlaces: "Places",
       tabPassport: "Passport",
+      tabNews: "News",
+      newsEmpty: "No news right now — check back here if there's ever a road closure, earthquake, or other event affecting the village.",
       resetPassport: "Reset passport",
       resetConfirm: "Reset your passport? All stamps saved on this device will be deleted.",
       footer: "All names and positions come from the screenshots you sent. Send me photos, videos, reviews, or position corrections for any place and I'll update the map.",
@@ -77,6 +79,8 @@
       viewMapTab: "🗺 Mapa",
       tabPlaces: "Lugares",
       tabPassport: "Pasaporte",
+      tabNews: "Noticias",
+      newsEmpty: "No hay noticias por el momento — vuelve a consultar aquí si alguna vez hay un cierre de carretera, un terremoto u otro evento que afecte al pueblo.",
       resetPassport: "Reiniciar pasaporte",
       resetConfirm: "¿Reiniciar tu pasaporte? Se borrarán todos los sellos guardados en este dispositivo.",
       footer: "Todos los nombres y posiciones vienen de las capturas que enviaste. Envíame fotos, videos, reseñas o correcciones de posición para cada lugar y actualizo el mapa.",
@@ -171,6 +175,22 @@
     { id:"campanario-de-panchoy", name:"Campanario de Panchoy", cats:["lodging","nature"], x:96, y:94,
       desc:{ en:"A finca (farm estate) and Airbnb-style lodging — the farthest point of the route, the end of San Cristóbal El Alto.",
              es:"Finca y alojamiento tipo Airbnb — el punto más lejano del recorrido, el final de San Cristóbal El Alto." }, reviews:[] }
+  ];
+
+  /* ---------------------------------------------------------
+     NEWS — community/visitor notices (road closures, earthquakes,
+     other events affecting the village). Empty by default; add
+     entries by hand the same way PLACES is edited, newest first
+     doesn't matter since renderNews() sorts by date. `image` is
+     optional — an exact filename under images/news/, following the
+     same jsDelivr-hosted convention as place photos (works once
+     deployed to GitHub Pages; shows nothing locally until then).
+     Example shape:
+     { id:"2026-08-earthquake", date:"2026-08-14",
+       title:{ en:"...", es:"..." }, body:{ en:"...", es:"..." },
+       image: "images/news/2026-08-earthquake.jpg" }
+  --------------------------------------------------------- */
+  var NEWS = [
   ];
 
   /* ---------------------------------------------------------
@@ -734,6 +754,41 @@
     document.getElementById("passportSummary").textContent = t("passportSummary")(count, total);
   }
 
+  /* News body is trusted, owner-authored content (edited directly in
+     this file, same as the village-story paragraphs), so it's allowed
+     the same <br><br> multi-paragraph markup via innerHTML rather than
+     being escaped like place descriptions — titles stay escaped since
+     they're short and don't need markup. */
+  function renderNews(){
+    var list = document.getElementById("newsList");
+    list.innerHTML = "";
+    if(NEWS.length === 0){
+      list.innerHTML = '<p class="empty-note">' + escapeHTML(t("newsEmpty")) + '</p>';
+      return;
+    }
+    var sorted = NEWS.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    sorted.forEach(function(item){
+      var dateObj = new Date(item.date + "T00:00:00");
+      var dateStr = isNaN(dateObj) ? item.date
+        : dateObj.toLocaleDateString(LANG === "es" ? "es-GT" : "en-US", { year:"numeric", month:"long", day:"numeric" });
+      var card = document.createElement("article");
+      card.className = "news-card";
+      card.innerHTML = '<div class="news-date mono">📰 ' + escapeHTML(dateStr) + '</div>'
+        + '<h3 class="news-title">' + escapeHTML(item.title[LANG]) + '</h3>'
+        + '<div class="news-body">' + item.body[LANG] + '</div>';
+      if(item.image){
+        var img = document.createElement("img");
+        img.className = "news-image";
+        img.src = jsdelivrUrl(item.image);
+        img.alt = item.title[LANG];
+        img.loading = "lazy";
+        img.onerror = function(){ img.remove(); };
+        card.appendChild(img);
+      }
+      list.appendChild(card);
+    });
+  }
+
   var backdrop = document.getElementById("modalBackdrop");
   var lastFocused = null;
 
@@ -910,18 +965,22 @@
 
   var tabList = document.getElementById("tab-list");
   var tabPassport = document.getElementById("tab-passport");
+  var tabNews = document.getElementById("tab-news");
   var panelList = document.getElementById("panel-list");
   var panelPassport = document.getElementById("panel-passport");
+  var panelNews = document.getElementById("panel-news");
 
   function activateTab(which){
-    var listActive = which === "list";
-    tabList.setAttribute("aria-selected", String(listActive));
-    tabPassport.setAttribute("aria-selected", String(!listActive));
-    panelList.hidden = !listActive;
-    panelPassport.hidden = listActive;
+    tabList.setAttribute("aria-selected", String(which === "list"));
+    tabPassport.setAttribute("aria-selected", String(which === "passport"));
+    tabNews.setAttribute("aria-selected", String(which === "news"));
+    panelList.hidden = which !== "list";
+    panelPassport.hidden = which !== "passport";
+    panelNews.hidden = which !== "news";
   }
   tabList.addEventListener("click", function(){ activateTab("list"); });
   tabPassport.addEventListener("click", function(){ activateTab("passport"); });
+  tabNews.addEventListener("click", function(){ activateTab("news"); });
 
   /* ---------------------------------------------------------
      MAIN VIEW TOGGLE (desktop only) — Places vs. Map, defaulting
@@ -983,6 +1042,7 @@
     document.querySelector(".sidebar").setAttribute("aria-label", t("sidebarAria"));
     tabList.textContent = t("tabPlaces");
     tabPassport.textContent = t("tabPassport");
+    tabNews.textContent = t("tabNews");
     document.getElementById("mainViewToggle").setAttribute("aria-label", t("mainViewAria"));
     tabViewPlaces.textContent = t("viewPlacesTab");
     tabViewMap.textContent = t("viewMapTab");
@@ -1012,6 +1072,7 @@
     renderPins();
     renderPlaceList();
     renderPassport();
+    renderNews();
     applyFontSize();
     if(activePlaceId) openModal(activePlaceId);
   }
@@ -1029,6 +1090,7 @@
     renderPins();
     renderPlaceList();
     renderPassport();
+    renderNews();
     applyFontSize();
   }
 

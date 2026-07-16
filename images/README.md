@@ -84,3 +84,22 @@ renders whatever image files it finds. This means:
 
 If you publish this repo with GitHub Pages, this folder structure works
 as-is — no build step required. Just commit and push.
+
+## News tab photos
+
+The News tab (road closures, earthquakes, other events) works
+differently from place photos — each notice has at most one photo, and
+you pick the exact filename yourself, so there's no GitHub API listing
+involved.
+
+1. Add the news item in `script.js` (find the `NEWS` array near the
+   top — there's an example entry shape commented right above it).
+2. Give it an `image` field with the path, e.g.
+   `image: "images/news/2026-08-earthquake.jpg"`.
+3. Drop that exact file into `images/news/` (create the folder if it
+   doesn't exist yet).
+
+Same accepted file types as above, and same GitHub Pages requirement —
+the image won't show up when previewing `index.html` locally, only
+once it's actually deployed. Leave `image` out entirely for a
+text-only notice.

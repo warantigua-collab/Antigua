@@ -95,7 +95,7 @@
   header.masthead .eyebrow{ font-family: 'Space Mono', monospace; letter-spacing: 3px; text-transform: uppercase; font-size: 0.7rem; color: var(--gold-bright); margin: 0 0 6px; }
   header.masthead h1{ font-size: clamp(2.1rem, 6vw, 3.4rem); margin: 0; text-shadow: 0 2px 0 rgba(0,0,0,0.4); }
   header.masthead p.village-intro{
-    margin: 10px auto 0; max-width: 640px; font-size: 0.92rem; line-height: 1.65;
+    margin: 10px auto 0; max-width: 780px; font-size: 1.08rem; line-height: 1.75;
     color: var(--parchment); font-style: italic;
   }
 
@@ -103,7 +103,7 @@
      core function, so these are dropped between/around it in short,
      headed chunks rather than one long read up front ---------- */
   .village-story{
-    position: relative; max-width: 720px; margin: 32px 20px; padding: 44px 32px 36px;
+    position: relative; max-width: 860px; margin: 32px 20px; padding: 44px 40px 36px;
     background: var(--parchment); border-radius: var(--r-l); box-shadow: var(--shadow-2);
     transition: box-shadow 0.25s var(--ease), transform 0.25s var(--ease); overflow: hidden;
   }
@@ -123,9 +123,9 @@
   .village-story .story-glyph{ display:block; text-align:center; font-size: 1.7rem; margin-bottom: 6px; }
   .village-story h2{
     font-family: 'Pirata One', 'IM Fell English', serif; font-weight:400; letter-spacing:0.5px;
-    font-size: clamp(1.25rem, 2.4vw, 1.6rem); margin: 0 0 12px; color: var(--ink); text-align:center;
+    font-size: clamp(1.4rem, 2.8vw, 1.85rem); margin: 0 0 14px; color: var(--ink); text-align:center;
   }
-  .village-story p{ font-size: 0.97rem; line-height: 1.75; color: var(--ink); margin: 0; }
+  .village-story p{ font-size: 1.08rem; line-height: 1.8; color: var(--ink); margin: 0; }
 
   .controls{
     display:flex; flex-wrap:wrap; gap: 16px; align-items:center; justify-content: space-between;

@@ -16,6 +16,9 @@
       mapFrameAria: "Illustrated map of San Cristóbal El Alto",
       mapCaption: "Hand-illustrated map, traced over the real position and shape of the streets from your reference screenshots — not a GPS-scale map.<br>The main plaza cluster (church, Casa San Sebastián, Ermita, Tienda Abuelitos, EORM, Delicias en lo Alto, El Temazcal, La Pilona) wasn't labeled in your wide overview shot, so its position here is an estimate based on road continuity — confirm or correct it.",
       sidebarAria: "List of places and traveler's passport",
+      mainViewAria: "Switch between the places list and the map",
+      viewPlacesTab: "📋 Places",
+      viewMapTab: "🗺 Map",
       tabPlaces: "Places",
       tabPassport: "Passport",
       resetPassport: "Reset passport",
@@ -51,6 +54,9 @@
       mapFrameAria: "Mapa ilustrado de San Cristóbal El Alto",
       mapCaption: "Mapa ilustrado a mano, trazado sobre la posición y forma real de las calles de tu captura de referencia — no es un mapa a escala GPS.<br>El grupo de la plaza principal (iglesia, Casa San Sebastián, Ermita, Tienda Abuelitos, EORM, Delicias en lo Alto, El Temazcal, La Pilona) no aparecía etiquetado en tu vista general, así que su posición aquí es una estimación de continuidad del camino — confírmala o corrígela.",
       sidebarAria: "Lista de lugares y pasaporte del viajero",
+      mainViewAria: "Cambiar entre la lista de lugares y el mapa",
+      viewPlacesTab: "📋 Lugares",
+      viewMapTab: "🗺 Mapa",
       tabPlaces: "Lugares",
       tabPassport: "Pasaporte",
       resetPassport: "Reiniciar pasaporte",
@@ -480,11 +486,19 @@
        container itself resizes (orientation change, breakpoint
        reflow, window resize). */
     function applyFitZoomRange(){
-      leafletMap.setMinZoom(-10); // un-clamp getBoundsZoom() below so it can report the true fit level
+      // un-clamp getBoundsZoom() below on BOTH ends so it can report the true fit level —
+      // a stale maxZoom from a previous call (e.g. one made while this container was
+      // display:none and measured as 0x0) would otherwise cap the new computation too
+      leafletMap.setMinZoom(-10);
+      leafletMap.setMaxZoom(10);
       var fitZoom = leafletMap.getBoundsZoom(mapBounds);
       leafletMap.setMinZoom(fitZoom);
       leafletMap.setMaxZoom(fitZoom + 2.5);
     }
+    leafletMap._applyFitZoomRange = applyFitZoomRange; // exposed for activateMainView() — the desktop
+      // map/places toggle defaults to the map-frame hidden (display:none), and Leaflet measures a
+      // hidden container as 0x0, so minZoom/fitBounds computed at init are garbage; this lets the
+      // toggle's click handler redo them once the container is actually visible and correctly sized.
     applyFitZoomRange();
     leafletMap.fitBounds(mapBounds);
 
@@ -862,6 +876,32 @@
   tabList.addEventListener("click", function(){ activateTab("list"); });
   tabPassport.addEventListener("click", function(){ activateTab("passport"); });
 
+  /* ---------------------------------------------------------
+     MAIN VIEW TOGGLE (desktop only) — Places vs. Map, defaulting
+     to Places. Mobile ignores this entirely: both panels stay
+     stacked (list first) regardless of view-places/view-map,
+     since those classes only have any effect above the sidebar-
+     reorder breakpoint in style.css.
+  --------------------------------------------------------- */
+  var tabViewPlaces = document.getElementById("tab-view-places");
+  var tabViewMap = document.getElementById("tab-view-map");
+  var mainGrid = document.getElementById("mainGrid");
+
+  function activateMainView(which){
+    var placesActive = which === "places";
+    tabViewPlaces.setAttribute("aria-selected", String(placesActive));
+    tabViewMap.setAttribute("aria-selected", String(!placesActive));
+    mainGrid.classList.toggle("view-places", placesActive);
+    mainGrid.classList.toggle("view-map", !placesActive);
+    if(!placesActive && leafletMap){
+      leafletMap.invalidateSize();
+      leafletMap._applyFitZoomRange();
+      leafletMap.fitBounds(mapBounds);
+    }
+  }
+  tabViewPlaces.addEventListener("click", function(){ activateMainView("places"); });
+  tabViewMap.addEventListener("click", function(){ activateMainView("map"); });
+
   document.getElementById("resetPassport").addEventListener("click", function(){
     if(window.confirm(t("resetConfirm"))){
       stamped = {};
@@ -888,6 +928,9 @@
     document.querySelector(".sidebar").setAttribute("aria-label", t("sidebarAria"));
     tabList.textContent = t("tabPlaces");
     tabPassport.textContent = t("tabPassport");
+    document.getElementById("mainViewToggle").setAttribute("aria-label", t("mainViewAria"));
+    tabViewPlaces.textContent = t("viewPlacesTab");
+    tabViewMap.textContent = t("viewMapTab");
     document.getElementById("resetPassport").textContent = t("resetPassport");
     document.getElementById("txt-footer").textContent = t("footer");
     document.getElementById("modalClose").setAttribute("aria-label", t("modalClose"));

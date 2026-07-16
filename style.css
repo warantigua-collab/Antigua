@@ -71,8 +71,30 @@
   }
   .lang-toggle button[aria-pressed="true"]{ background: var(--gold); color: var(--teal-deep); }
 
+  /* Desktop-only Places/Map toggle — hidden on mobile (see the max-width:900px
+     block below), where both panels stay stacked regardless, same as before. */
+  .main-view-toggle{ display:flex; justify-content:center; gap:0; margin: 14px 20px 4px; }
+  .main-view-toggle button{
+    flex: 0 0 auto; min-width: 150px; padding: 12px 26px; border: 2px solid var(--gold);
+    background: var(--teal-deep); color: var(--parchment); font-family:'Space Mono', monospace;
+    font-size: 0.9rem; font-weight:700; letter-spacing: 0.5px;
+  }
+  .main-view-toggle button:first-child{ border-radius: 999px 0 0 999px; border-right: none; }
+  .main-view-toggle button:last-child{ border-radius: 0 999px 999px 0; }
+  .main-view-toggle button[aria-selected="true"]{ background: var(--gold); color: var(--teal-deep); }
+  .main-view-toggle button:hover{ background: var(--ink-soft); color: var(--parchment); }
+  .main-view-toggle button[aria-selected="true"]:hover{ background: var(--gold-bright); color: var(--teal-deep); }
+
   .main-grid{ display:grid; grid-template-columns: minmax(0,1fr) 320px; gap: 22px; padding: 22px 20px 0; align-items:start; }
+  @media (min-width: 901px){
+    .main-grid.view-places{ grid-template-columns: 1fr; justify-items:center; }
+    .main-grid.view-places .map-frame{ display:none; }
+    .main-grid.view-places .sidebar{ width:100%; max-width: 720px; max-height:none; }
+    .main-grid.view-map{ grid-template-columns: 1fr; }
+    .main-grid.view-map .sidebar{ display:none; }
+  }
   @media (max-width: 900px){
+    .main-view-toggle{ display:none; }
     .main-grid{ grid-template-columns: 1fr; }
     .sidebar{ order: -1; }
   }
@@ -278,6 +300,27 @@
     }
   }
 
+  /* Place-row thumbnail — shown whenever the place list is presented as
+     primary content: always on mobile, and in the desktop Places view
+     (see the min-width:901px block below). The old narrow-sidebar desktop
+     layout that only had room for the plain color swatch is gone, so
+     this is no longer mobile-gated. */
+  .place-row .swatch{ display:none; }
+  .place-row .row-thumb{
+    display:block; position:relative; flex: 0 0 64px; width:64px; height:64px; border-radius: 8px;
+    overflow:hidden; border: 2px solid; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
+  }
+  .row-thumb-fallback{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-size: 1.4rem; color: var(--parchment);
+  }
+  .row-thumb img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center;
+    opacity:0; transition: opacity 0.3s ease;
+  }
+  .row-thumb.has-photo .row-thumb-fallback{ display:none; }
+  .row-thumb.has-photo img{ opacity:1; }
+
   @media (max-width: 640px){
     .controls{ flex-direction:column; align-items:stretch; }
     .search-wrap{ max-width:none; flex: 0 0 auto; }
@@ -286,20 +329,4 @@
     .sidebar{ max-height:none; }
     .leaflet-control-zoom a{ width: 30px !important; height:30px !important; line-height:30px !important; }
     .reset-view-btn{ width: 30px; height:30px; }
-
-    .place-row .swatch{ display:none; }
-    .place-row .row-thumb{
-      display:block; position:relative; flex: 0 0 64px; width:64px; height:64px; border-radius: 8px;
-      overflow:hidden; border: 2px solid; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
-    }
-    .row-thumb-fallback{
-      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      font-size: 1.4rem; color: var(--parchment);
-    }
-    .row-thumb img{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center;
-      opacity:0; transition: opacity 0.3s ease;
-    }
-    .row-thumb.has-photo .row-thumb-fallback{ display:none; }
-    .row-thumb.has-photo img{ opacity:1; }
   }

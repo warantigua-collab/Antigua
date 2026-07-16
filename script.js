@@ -150,7 +150,7 @@
     { id:"tienda-abuelitos", name:"Tienda Abuelitos Coca y Miguel", cats:["service","restaurant"], x:48, y:64,
       desc:{ en:"Souvenir shop and restaurant, near the main plaza.",
              es:"Tienda de recuerdos y también restaurante, cerca de la plaza principal." }, reviews:[] },
-    { id:"el-temazcal", name:"El Temascal", cats:["wellness"], x:47, y:69,
+    { id:"el-temascal", name:"El Temascal", cats:["wellness"], x:47, y:69,
       desc:{ en:"Nursery / temascal near the main plaza, at the spot that showed as an unnamed camera icon on the map.",
              es:"Vivero / temascal cerca de la plaza principal, en el punto que en el mapa aparecía como el ícono de cámara sin nombre." }, reviews:[] },
     { id:"la-pilona", name:"La Pilona", cats:["wellness"], x:51, y:68,

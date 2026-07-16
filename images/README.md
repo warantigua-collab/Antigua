@@ -16,7 +16,7 @@ images/
   plaza-san-cristobal-alto/
   casa-san-sebastian/
   tienda-abuelitos/
-  el-temazcal/
+  el-temascal/
   la-pilona/
   tierra-y-lava/
   sky-dancer-villa/

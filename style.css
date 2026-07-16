@@ -265,14 +265,22 @@
   .visually-hidden{ position:absolute; width:1px;height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; } }
 
-  @media (max-width: 640px){
+  /* max-width alone misses phones in landscape — the viewport is wide
+     (often 650-950px) even though it's still a small phone screen, so
+     a width-only query never fires there. max-height + orientation
+     catches that case too, for anything that needs to stay reachable
+     regardless of how the phone is held. */
+  @media (max-width: 640px), (max-height: 500px) and (orientation: landscape){
     header.masthead{ padding-top: 62px; }
-    .controls{ flex-direction:column; align-items:stretch; }
-    .search-wrap{ max-width:none; flex: 0 0 auto; }
     .lang-toggle{
       position: fixed; top: 14px; right: 14px; z-index: 20;
       background: var(--teal-deep); box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
+  }
+
+  @media (max-width: 640px){
+    .controls{ flex-direction:column; align-items:stretch; }
+    .search-wrap{ max-width:none; flex: 0 0 auto; }
     .progress-pill{ align-self: flex-start; }
     .gallery{ grid-template-columns: repeat(2,1fr); }
     .sidebar{ max-height:none; }

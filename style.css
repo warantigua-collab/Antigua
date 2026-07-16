@@ -89,9 +89,30 @@
   @media (min-width: 901px){
     .main-grid.view-places{ grid-template-columns: 1fr; justify-items:center; }
     .main-grid.view-places .map-frame{ display:none; }
-    .main-grid.view-places .sidebar{ width:100%; max-width: 720px; max-height:none; }
+    .main-grid.view-places .sidebar{ width:100%; max-width: 1100px; max-height:none; }
     .main-grid.view-map{ grid-template-columns: 1fr; }
     .main-grid.view-map .sidebar{ display:none; }
+
+    /* The desktop Places/Passport view has far more room than the old
+       320px permanent sidebar this styling was originally sized for —
+       scale text, thumbnails and spacing up instead of leaving them
+       looking small and lost in the middle of a wide screen. */
+    .main-grid.view-places .sidebar-tabs button{ font-size: 0.9rem; padding: 16px 8px; }
+    .main-grid.view-places .sidebar-panel{ padding: 22px; }
+    .main-grid.view-places #placeList{
+      display:grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 14px;
+    }
+    .main-grid.view-places .place-row{ padding: 14px; gap: 14px; margin-bottom:0; }
+    .main-grid.view-places .row-thumb{ flex: 0 0 88px; width:88px; height:88px; }
+    .main-grid.view-places .row-thumb-fallback{ font-size: 1.9rem; }
+    .main-grid.view-places .place-row .info strong{ font-size: 1.15rem; }
+    .main-grid.view-places .place-row .info small{ font-size: 0.78rem; }
+    .main-grid.view-places .place-row .stamped-check{ font-size: 0.78rem; }
+    .main-grid.view-places .passport-grid{ grid-template-columns: repeat(6, 1fr); gap: 16px; padding: 8px; }
+    .main-grid.view-places .stamp-slot{ font-size: 0.62rem; }
+    .main-grid.view-places .stamp-slot .glyph{ font-size: 1.6rem; }
+    .main-grid.view-places .passport-footer{ font-size: 0.85rem; }
+    .main-grid.view-places .empty-note{ font-size: 0.95rem; padding: 40px 10px; }
   }
   @media (max-width: 900px){
     .main-view-toggle{ display:none; }

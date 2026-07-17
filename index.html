@@ -48,7 +48,7 @@
       <div class="sidebar-tabs" role="tablist">
         <button role="tab" id="tab-list" aria-selected="true" aria-controls="panel-list">Places</button>
         <button role="tab" id="tab-passport" aria-selected="false" aria-controls="panel-passport">Passport</button>
-        <button role="tab" id="tab-news" aria-selected="false" aria-controls="panel-news">Events</button>
+        <button role="tab" id="tab-events" aria-selected="false" aria-controls="panel-events">Events</button>
       </div>
 
       <div class="sidebar-panel" id="panel-list" role="tabpanel" aria-labelledby="tab-list">
@@ -63,12 +63,8 @@
         </div>
       </div>
 
-      <div class="sidebar-panel" id="panel-news" role="tabpanel" aria-labelledby="tab-news" hidden>
-        <div class="news-submit-cta">
-          <p id="txt-news-submit-note">See something worth sharing — a road closure, damage from an earthquake, anything else? Report it below. Reports are reviewed before they're posted.</p>
-          <a id="newsSubmitLink" class="news-submit-btn" href="#" target="_blank" rel="noopener noreferrer">📣 Report an event</a>
-        </div>
-        <div id="newsList"></div>
+      <div class="sidebar-panel" id="panel-events" role="tabpanel" aria-labelledby="tab-events" hidden>
+        <div id="eventsList"></div>
       </div>
     </aside>
 

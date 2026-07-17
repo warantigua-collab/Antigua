@@ -29,10 +29,8 @@
       viewMapTab: "🗺 Map",
       tabPlaces: "Places",
       tabPassport: "Passport",
-      tabNews: "Events",
-      newsEmpty: "No news right now — check back here if there's ever a road closure, earthquake, or other event affecting the village.",
-      newsSubmitNote: "See something worth sharing — a road closure, damage from an earthquake, anything else? Report it below. Reports are reviewed before they're posted.",
-      newsSubmitBtn: "📣 Report an event",
+      tabEvents: "Events",
+      eventsEmpty: "No events scheduled right now — check back soon.",
       resetPassport: "Reset passport",
       resetConfirm: "Reset your passport? All stamps saved on this device will be deleted.",
       footer: "All names and positions come from the screenshots you sent. Send me photos, videos, reviews, or position corrections for any place and I'll update the map.",
@@ -81,10 +79,8 @@
       viewMapTab: "🗺 Mapa",
       tabPlaces: "Lugares",
       tabPassport: "Pasaporte",
-      tabNews: "Eventos",
-      newsEmpty: "No hay noticias por el momento — vuelve a consultar aquí si alguna vez hay un cierre de carretera, un terremoto u otro evento que afecte al pueblo.",
-      newsSubmitNote: "¿Viste algo que valga la pena compartir — un cierre de carretera, daños de un terremoto, otra cosa? Repórtalo abajo. Los reportes se revisan antes de publicarse.",
-      newsSubmitBtn: "📣 Reportar un evento",
+      tabEvents: "Eventos",
+      eventsEmpty: "No hay eventos programados por el momento — vuelve pronto.",
       resetPassport: "Reiniciar pasaporte",
       resetConfirm: "¿Reiniciar tu pasaporte? Se borrarán todos los sellos guardados en este dispositivo.",
       footer: "Todos los nombres y posiciones vienen de las capturas que enviaste. Envíame fotos, videos, reseñas o correcciones de posición para cada lugar y actualizo el mapa.",
@@ -182,16 +178,20 @@
   ];
 
   /* ---------------------------------------------------------
-     NEWS — community/visitor notices (road closures, earthquakes,
-     other events affecting the village) now live in news.json at the
-     repo root, not here. Community members submit reports as GitHub
-     Issues (see .github/ISSUE_TEMPLATE/news-report.yml); the site
-     owner reviews and publishes them via admin.html, which commits
-     the approved entry into news.json. renderNews() fetches that file
-     at runtime — see below. Unlike the rest of the site, each entry
-     is a single language (whichever the submitter wrote in), shown
-     as-is regardless of the EN/ES toggle.
+     EVENTS — static, recurring/scheduled village events (festivals,
+     patron saint day, Semana Santa, etc.), edited by hand the same
+     way PLACES is: add an object below and commit. `image` is
+     optional — an exact filename under images/events/, same
+     convention as the News-tab photos this replaced. Sorted
+     newest/soonest-first by `date` (`"YYYY-MM-DD"`, plain string
+     comparison — the format matters) in renderEvents().
+     Example shape:
+     { id:"2026-08-feria", date:"2026-08-15",
+       title:{ en:"...", es:"..." }, body:{ en:"...", es:"..." },
+       image: "images/events/2026-08-feria.jpg" }
   --------------------------------------------------------- */
+  var EVENTS = [
+  ];
 
   /* ---------------------------------------------------------
      PHOTOS — reads whatever image files actually exist in each
@@ -754,62 +754,38 @@
     document.getElementById("passportSummary").textContent = t("passportSummary")(count, total);
   }
 
-  /* News entries are now community-submitted (see the comment above
-     NEWS's old spot), reviewed and published by the site owner via
-     admin.html, but the raw text still ultimately came from a stranger
-     on the internet — unlike the village-story paragraphs, this is
-     NOT trusted content. Both title and body are escaped; body's line
-     breaks are preserved by converting literal newlines to <br> only
-     *after* escaping, so a submission can't smuggle in markup. */
-  var newsCache = null; // fetched once; renderNews() re-renders the cache on language switch without re-fetching
-
-  function newsBodyHtml(raw){
-    return escapeHTML(raw).replace(/\n/g, "<br>");
-  }
-
-  function newsImageSrc(image){
-    return image.indexOf("http") === 0 ? image : jsdelivrUrl(image);
-  }
-
-  function renderNewsList(items){
-    var list = document.getElementById("newsList");
+  /* EVENTS entries are owner-authored in this file, same as PLACES and
+     the village-story paragraphs, so body is allowed the same <br><br>
+     multi-paragraph markup via innerHTML rather than being escaped —
+     title stays escaped since it's short and doesn't need markup. */
+  function renderEvents(){
+    var list = document.getElementById("eventsList");
     list.innerHTML = "";
-    if(items.length === 0){
-      list.innerHTML = '<p class="empty-note">' + escapeHTML(t("newsEmpty")) + '</p>';
+    if(EVENTS.length === 0){
+      list.innerHTML = '<p class="empty-note">' + escapeHTML(t("eventsEmpty")) + '</p>';
       return;
     }
-    var sorted = items.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
+    var sorted = EVENTS.slice().sort(function(a,b){ return b.date.localeCompare(a.date); });
     sorted.forEach(function(item){
       var dateObj = new Date(item.date + "T00:00:00");
       var dateStr = isNaN(dateObj) ? item.date
         : dateObj.toLocaleDateString(LANG === "es" ? "es-GT" : "en-US", { year:"numeric", month:"long", day:"numeric" });
       var card = document.createElement("article");
-      card.className = "news-card";
-      card.innerHTML = '<div class="news-date mono">📰 ' + escapeHTML(dateStr) + '</div>'
-        + '<h3 class="news-title">' + escapeHTML(item.title) + '</h3>'
-        + '<div class="news-body">' + newsBodyHtml(item.body) + '</div>';
+      card.className = "event-card";
+      card.innerHTML = '<div class="event-date mono">📅 ' + escapeHTML(dateStr) + '</div>'
+        + '<h3 class="event-title">' + escapeHTML(item.title[LANG]) + '</h3>'
+        + '<div class="event-body">' + item.body[LANG] + '</div>';
       if(item.image){
         var img = document.createElement("img");
-        img.className = "news-image";
-        img.src = newsImageSrc(item.image);
-        img.alt = item.title;
+        img.className = "event-image";
+        img.src = jsdelivrUrl(item.image);
+        img.alt = item.title[LANG];
         img.loading = "lazy";
         img.onerror = function(){ img.remove(); };
         card.appendChild(img);
       }
       list.appendChild(card);
     });
-  }
-
-  function renderNews(){
-    if(newsCache){ renderNewsList(newsCache); return; }
-    fetch("news.json")
-      .then(function(res){ return res.ok ? res.json() : []; })
-      .catch(function(){ return []; })
-      .then(function(data){
-        newsCache = Array.isArray(data) ? data : [];
-        renderNewsList(newsCache);
-      });
   }
 
   var backdrop = document.getElementById("modalBackdrop");
@@ -988,22 +964,22 @@
 
   var tabList = document.getElementById("tab-list");
   var tabPassport = document.getElementById("tab-passport");
-  var tabNews = document.getElementById("tab-news");
+  var tabEvents = document.getElementById("tab-events");
   var panelList = document.getElementById("panel-list");
   var panelPassport = document.getElementById("panel-passport");
-  var panelNews = document.getElementById("panel-news");
+  var panelEvents = document.getElementById("panel-events");
 
   function activateTab(which){
     tabList.setAttribute("aria-selected", String(which === "list"));
     tabPassport.setAttribute("aria-selected", String(which === "passport"));
-    tabNews.setAttribute("aria-selected", String(which === "news"));
+    tabEvents.setAttribute("aria-selected", String(which === "events"));
     panelList.hidden = which !== "list";
     panelPassport.hidden = which !== "passport";
-    panelNews.hidden = which !== "news";
+    panelEvents.hidden = which !== "events";
   }
   tabList.addEventListener("click", function(){ activateTab("list"); });
   tabPassport.addEventListener("click", function(){ activateTab("passport"); });
-  tabNews.addEventListener("click", function(){ activateTab("news"); });
+  tabEvents.addEventListener("click", function(){ activateTab("events"); });
 
   /* ---------------------------------------------------------
      MAIN VIEW TOGGLE (desktop only) — Places vs. Map, defaulting
@@ -1065,9 +1041,7 @@
     document.querySelector(".sidebar").setAttribute("aria-label", t("sidebarAria"));
     tabList.textContent = t("tabPlaces");
     tabPassport.textContent = t("tabPassport");
-    tabNews.textContent = t("tabNews");
-    document.getElementById("txt-news-submit-note").textContent = t("newsSubmitNote");
-    document.getElementById("newsSubmitLink").textContent = t("newsSubmitBtn");
+    tabEvents.textContent = t("tabEvents");
     document.getElementById("mainViewToggle").setAttribute("aria-label", t("mainViewAria"));
     tabViewPlaces.textContent = t("viewPlacesTab");
     tabViewMap.textContent = t("viewMapTab");
@@ -1097,7 +1071,7 @@
     renderPins();
     renderPlaceList();
     renderPassport();
-    renderNews();
+    renderEvents();
     applyFontSize();
     if(activePlaceId) openModal(activePlaceId);
   }
@@ -1137,15 +1111,13 @@
 
   function init(){
     initLeafletMap();
-    document.getElementById("newsSubmitLink").href =
-      "https://github.com/" + GITHUB_OWNER + "/" + GITHUB_REPO + "/issues/new?template=news-report.yml";
     applyStaticStrings();
     renderLegend();
     renderFilterChips();
     renderPins();
     renderPlaceList();
     renderPassport();
-    renderNews();
+    renderEvents();
     applyFontSize();
     initStoryGroups();
   }

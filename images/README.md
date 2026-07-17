@@ -85,33 +85,21 @@ renders whatever image files it finds. This means:
 If you publish this repo with GitHub Pages, this folder structure works
 as-is — no build step required. Just commit and push.
 
-## News tab photos
+## Events tab photos
 
-The News tab (road closures, earthquakes, other events) no longer
-works like place photos, or even like the rest of this site — news
-posts are submitted by the community and reviewed by the site owner,
-not hand-edited into `script.js`. Two ways a photo ends up attached to
-a news post:
+The Events tab (festivals, patron saint day, Semana Santa, other
+scheduled events) works the same way as News-tab photos used to —
+each event has at most one photo, and you pick the exact filename
+yourself, so there's no GitHub API listing involved.
 
-**Community submissions** (the normal path): whoever reports the event
-uses the "📣 Report an event" link on the site, which opens a GitHub
-Issue form — they drag their photo straight into the text box there.
-When the owner approves it from `admin.html`, that photo's GitHub-
-hosted URL gets stored directly in `news.json`'s `image` field. Nothing
-to upload here — it never touches this `images/` folder at all.
+1. Add the event in `script.js` (find the `EVENTS` array near the
+   top — there's an example entry shape commented right above it).
+2. Give it an `image` field with the path, e.g.
+   `image: "images/events/2026-08-feria.jpg"`.
+3. Drop that exact file into `images/events/` (create the folder if
+   it doesn't exist).
 
-**Adding/editing an entry by hand** (for the owner, if you'd rather
-skip a GitHub Issue for something): drop the photo into `images/news/`
-(create the folder if it doesn't exist), then either add the entry via
-`admin.html` (Edit an existing one, or hand-edit `news.json` directly
-and commit) with `"image": "images/news/your-file.jpg"` — a path like
-this, not a full URL, is how the site tells the two cases apart.
-
-Same accepted file types as the rest of this doc. A repo-relative
-`image` path won't show up when previewing `index.html` from disk —
-same GitHub Pages requirement as place photos. Leave `image` out
-entirely for a text-only notice.
-
-See `CLAUDE.md`'s "News tab" section for how the whole submit → review
-→ publish pipeline fits together, and how to generate the access token
-`admin.html` needs.
+Same accepted file types as above, and same GitHub Pages requirement —
+the image won't show up when previewing `index.html` locally, only
+once it's actually deployed. Leave `image` out entirely for a
+text-only entry.
